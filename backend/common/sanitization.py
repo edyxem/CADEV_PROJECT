@@ -1,5 +1,7 @@
 """Assainissement des contenus riches saisis par les membres."""
 
+import html
+
 import nh3
 
 ALLOWED_TAGS: set[str] = {
@@ -44,3 +46,10 @@ def has_visible_text(value: str | None) -> bool:
     if not value:
         return False
     return bool(nh3.clean(value, tags=set()).strip())
+
+
+def to_plain_text(value: str | None) -> str:
+    """Retire toute balise HTML d'un champ texte simple (biographie, message court)."""
+    if not value:
+        return ""
+    return html.unescape(nh3.clean(value, tags=set())).strip()

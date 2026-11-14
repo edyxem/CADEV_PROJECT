@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from common.permissions import is_moderator
 
-from .models import Answer, AnswerVote, Comment, ContentStatus, Post, PostVote
+from .models import Answer, AnswerVote, Bookmark, Comment, ContentStatus, Post, PostVote
 
 POPULAR_DEFAULT_DAYS = 30
 
@@ -48,8 +48,9 @@ def annotate_posts(queryset: QuerySet[Post], user: Any) -> QuerySet[Post]:
     )
     if user is not None and user.is_authenticated:
         voted = PostVote.objects.filter(post=OuterRef("pk"), user=user)
-        return queryset.annotate(has_voted=Exists(voted))
-    return queryset.annotate(has_voted=Value(False))
+        saved = Bookmark.objects.filter(post=OuterRef("pk"), user=user)
+        return queryset.annotate(has_voted=Exists(voted), has_bookmarked=Exists(saved))
+    return queryset.annotate(has_voted=Value(False), has_bookmarked=Value(False))
 
 
 def feed(user: Any) -> QuerySet[Post]:
@@ -121,3 +122,14 @@ def visible_answers(question: Post, user: Any, ordering: str = "votes") -> Query
     if ordering == "recent":
         return queryset.order_by("-is_accepted", "-created_at")
     return queryset.order_by("-is_accepted", "-vote_count", "created_at")
+
+
+def bookmarked_posts(user: Any) -> QuerySet[Post]:
+    """Favoris du membre encore publiés, du plus récemment enregistré au plus ancien."""
+    saved_at = Bookmark.objects.filter(post=OuterRef("pk"), user=user).values("created_at")[:1]
+    return (
+        feed(user)
+        .filter(bookmarks__user=user)
+        .annotate(bookmarked_at=Subquery(saved_at))
+        .order_by("-bookmarked_at")
+    )

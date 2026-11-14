@@ -1,6 +1,7 @@
 """Notifications internes, personnelles et sans donnée sensible."""
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from common.models import BaseModel
@@ -57,3 +58,34 @@ class Notification(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.recipient} — {self.title}"
+
+
+# Une décision de modération doit toujours parvenir au membre concerné (§Q.4).
+MANDATORY_TYPES = frozenset({Notification.Type.MODERATION_ACTION})
+
+
+class NotificationPreference(BaseModel):
+    """Paramètres de notification d'un membre (P1)."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_preferences"
+    )
+    muted_types = ArrayField(
+        models.CharField(max_length=32, choices=Notification.Type.choices),
+        default=list,
+        blank=True,
+        help_text="Types de notification que le membre ne souhaite plus recevoir.",
+    )
+    email_types = ArrayField(
+        models.CharField(max_length=32, choices=Notification.Type.choices),
+        default=list,
+        blank=True,
+        help_text="Types également envoyés par e-mail (P2).",
+    )
+
+    class Meta:
+        verbose_name = "préférences de notification"
+        verbose_name_plural = "préférences de notification"
+
+    def __str__(self) -> str:
+        return f"Préférences de {self.user}"

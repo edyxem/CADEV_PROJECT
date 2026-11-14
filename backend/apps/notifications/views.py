@@ -12,7 +12,12 @@ from common.schema import errors
 
 from . import services
 from .models import Notification
-from .serializers import MarkedSerializer, NotificationSerializer, UnreadCountSerializer
+from .serializers import (
+    MarkedSerializer,
+    NotificationSerializer,
+    PreferenceSerializer,
+    UnreadCountSerializer,
+)
 
 TAG = ["Notifications"]
 
@@ -70,3 +75,21 @@ class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def unread_count(self, request: Request) -> Response:
         unread = Notification.objects.filter(recipient=request.user, is_read=False).count()
         return Response({"unread": unread})
+
+    @extend_schema(
+        tags=TAG,
+        summary="Mes préférences de notification",
+        description="GET pour consulter, PATCH pour modifier `muted_types` (types à ne plus "
+        "recevoir) et `email_types` (types également envoyés par e-mail). Les décisions de "
+        "modération restent toujours notifiées.",
+        request=PreferenceSerializer,
+        responses={200: PreferenceSerializer, **errors(400, 401)},
+    )
+    @action(detail=False, methods=["get", "patch"])
+    def preferences(self, request: Request) -> Response:
+        preferences = services.get_preferences(request.user)
+        if request.method == "PATCH":
+            serializer = PreferenceSerializer(preferences, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        return Response(PreferenceSerializer(preferences).data)

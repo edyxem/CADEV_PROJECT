@@ -18,6 +18,7 @@ from .models import Answer, Comment, ContentStatus, Post
 from .serializers import (
     AnswerSerializer,
     AnswerWriteSerializer,
+    BookmarkResultSerializer,
     CommentSerializer,
     CommentWriteSerializer,
     PostDetailSerializer,
@@ -103,13 +104,15 @@ class PostViewSet(ActionThrottleMixin, viewsets.ModelViewSet):
         if self.action == "list":
             ordering = self.request.query_params.get("ordering", "recent")
             return selectors.order_feed(selectors.feed(user), ordering, _period(self.request))
+        if self.action == "bookmarks":
+            return selectors.bookmarked_posts(user)
         if self.action == "mine":
             own = Post.all_objects.filter(author=user).exclude(status=ContentStatus.DELETED)
             return selectors.annotate_posts(own, user).order_by("-created_at")
         return selectors.visible_posts(user)
 
     def get_serializer_class(self):
-        if self.action in {"list", "mine"}:
+        if self.action in {"list", "mine", "bookmarks"}:
             return PostListSerializer
         if self.action in {"create", "partial_update"}:
             return PostWriteSerializer
@@ -146,6 +149,35 @@ class PostViewSet(ActionThrottleMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def mine(self, request: Request) -> Response:
         return super().list(request)
+
+    @extend_schema(
+        tags=POSTS_TAG,
+        summary="Mes favoris",
+        description="Publications enregistrées encore publiées, de la plus récente à la plus "
+        "ancienne.",
+        responses={200: PostListSerializer(many=True), **errors(401)},
+    )
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def bookmarks(self, request: Request) -> Response:
+        return super().list(request)
+
+    @extend_schema(
+        tags=POSTS_TAG,
+        summary="Ajouter / retirer un favori",
+        description="POST sans corps bascule ; `active` fixe l'état ; DELETE retire.",
+        request=VoteInputSerializer,
+        responses={200: BookmarkResultSerializer, **errors(401, 404, 409)},
+    )
+    @action(detail=True, methods=["post", "delete"], permission_classes=[IsAuthenticated])
+    def bookmark(self, request: Request, pk: str | None = None) -> Response:
+        post = self.get_object()
+        active = False
+        if request.method == "POST":
+            serializer = VoteInputSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            active = serializer.validated_data["active"]
+        bookmarked = services.bookmark_post(post=post, user=request.user, active=active)
+        return Response({"bookmarked": bookmarked})
 
     @extend_schema(
         tags=POSTS_TAG,

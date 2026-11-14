@@ -90,6 +90,10 @@ def create_post(*, author: User, data: dict[str, Any]) -> Post:
     status = data.pop("status", ContentStatus.PUBLISHED)
     if data.get("type") in MODERATOR_ONLY_TYPES and not is_moderator(author):
         raise exceptions.PermissionDenied("Les annonces sont réservées à la modération.")
+    if data.get("community") is not None:
+        from apps.communities.services import ensure_can_publish
+
+        ensure_can_publish(data["community"], author)
 
     post = Post(author=author, status=status, **data)
     post.content = clean_rich_content(post.content, required=status == ContentStatus.PUBLISHED)
@@ -112,6 +116,10 @@ def update_post(*, post: Post, actor: User, data: dict[str, Any]) -> Post:
     if data.get("type") in MODERATOR_ONLY_TYPES and not is_moderator(actor):
         raise exceptions.PermissionDenied("Les annonces sont réservées à la modération.")
 
+    if data.get("community") is not None and data["community"] != post.community:
+        from apps.communities.services import ensure_can_publish
+
+        ensure_can_publish(data["community"], actor)
     for field, value in data.items():
         setattr(post, field, value)
     if target_status != post.status:

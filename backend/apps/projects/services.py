@@ -19,15 +19,21 @@ from common.transitions import ensure_transition
 from . import policies
 from .models import (
     FROZEN_STATUSES,
+    INVITATION_TRANSITIONS,
     JOIN_REQUEST_TRANSITIONS,
     JOINABLE_STATUSES,
     PROJECT_TRANSITIONS,
     TASK_TRANSITIONS,
     JoinRequest,
+    Milestone,
     Project,
+    ProjectActivity,
+    ProjectInvitation,
     ProjectMember,
     ProjectRoleNeed,
     ProjectTask,
+    ProjectUpdate,
+    TaskComment,
 )
 
 REAPPLY_COOLDOWN = timedelta(days=30)
@@ -38,6 +44,23 @@ Role = ProjectMember.Role
 
 def project_url(project: Project) -> str:
     return f"/projets/{project.slug}"
+
+
+Verb = ProjectActivity.Verb
+
+
+def record(
+    project: Project, actor: User | None, verb: str, target: Any = None, **metadata: Any
+) -> None:
+    """Ajoute une ligne au fil d'activité (historique des changements) du projet."""
+    ProjectActivity.objects.create(
+        project=project,
+        actor=actor,
+        verb=verb,
+        target_type=target._meta.model_name if target is not None else "",
+        target_id=getattr(target, "pk", None),
+        metadata={key: str(value) for key, value in metadata.items() if value not in (None, "")},
+    )
 
 
 def _forbid(message: str) -> None:
@@ -93,6 +116,7 @@ def create_project(*, owner: User, data: dict[str, Any]) -> Project:
     if technologies:
         project.technologies.set(technologies)
     ProjectMember.objects.create(project=project, user=owner, role=Role.OWNER)
+    record(project, owner, Verb.PROJECT_CREATED, project)
     return project
 
 
@@ -120,6 +144,7 @@ def update_project(*, project: Project, actor: User, data: dict[str, Any]) -> Pr
     if technologies is not None:
         project.technologies.set(technologies)
     if status_changed:
+        record(project, actor, Verb.STATUS_CHANGED, project, status=target_status)
         _notify_members(
             project,
             actor=actor,
@@ -282,6 +307,7 @@ def accept_join_request(
         role=role,
         title=join_request.requested_role.role_name if join_request.requested_role else "",
     )
+    record(project, join_request.user, Verb.MEMBER_JOINED, member, role=role)
     need = join_request.requested_role
     if need is not None:
         filled = JoinRequest.objects.filter(
@@ -362,6 +388,7 @@ def update_member(*, member: ProjectMember, actor: User, data: dict[str, Any]) -
     if member.role != Role.MANAGER:
         member.can_manage_members = False
     member.save()
+    record(project, actor, Verb.ROLE_CHANGED, member, role=member.role, user=member.user.username)
     return member
 
 
@@ -386,6 +413,7 @@ def remove_member(*, member: ProjectMember, actor: User) -> None:
     if member.role == Role.MANAGER and not policies.is_owner(project, actor):
         _forbid("Seul le propriétaire peut retirer un responsable.")
     _end_membership(member, ProjectMember.Status.REMOVED)
+    record(project, actor, Verb.MEMBER_REMOVED, member, user=member.user.username)
 
 
 @transaction.atomic
@@ -398,6 +426,7 @@ def leave_project(*, project: Project, user: User) -> None:
             "Transférez la propriété avant de quitter le projet.", code="owner_cannot_leave"
         )
     _end_membership(member, ProjectMember.Status.LEFT)
+    record(project, user, Verb.MEMBER_LEFT, member)
 
 
 @transaction.atomic
@@ -418,6 +447,7 @@ def transfer_ownership(*, project: Project, actor: User, new_owner: User) -> Pro
     target.save(update_fields=["role", "can_manage_members", "updated_at"])
     project.owner = new_owner
     project.save(update_fields=["owner", "updated_at"])
+    record(project, actor, Verb.OWNERSHIP_TRANSFERRED, project, new_owner=new_owner.username)
     return project
 
 
@@ -465,7 +495,9 @@ def create_task(*, project: Project, actor: User, data: dict[str, Any]) -> Proje
         data["completed_at"] = timezone.now()
     data["title"] = to_plain_text(data["title"])
     data["description"] = to_plain_text(data.get("description", ""))
+    _validate_milestone(project, data.get("milestone"))
     task = ProjectTask.objects.create(project=project, created_by=actor, **data)
+    record(project, actor, Verb.TASK_CREATED, task, title=task.title)
     _notify_assignee(task, actor)
     return task
 
@@ -499,12 +531,24 @@ def update_task(*, task: ProjectTask, actor: User, data: dict[str, Any]) -> Proj
         task.status = target
         task.completed_at = timezone.now() if target == ProjectTask.Status.DONE else None
 
+    if "milestone" in data:
+        _validate_milestone(project, data["milestone"])
     for field in ("title", "description"):
         if field in data:
             data[field] = to_plain_text(data[field])
+    previous_status = task.status
     for field, value in data.items():
         setattr(task, field, value)
     task.save()
+    record(
+        project,
+        actor,
+        Verb.TASK_UPDATED,
+        task,
+        title=task.title,
+        status=task.status if task.status != previous_status else None,
+        assignee=task.assignee.username if assignee_changed and task.assignee else None,
+    )
     if assignee_changed:
         _notify_assignee(task, actor)
     return task
@@ -519,4 +563,167 @@ def delete_task(*, task: ProjectTask, actor: User) -> None:
             "Une tâche terminée conserve son historique et ne peut pas être supprimée.",
             code="task_done",
         )
+    record(task.project, actor, Verb.TASK_DELETED, None, title=task.title)
     task.delete()
+
+
+def _validate_milestone(project: Project, milestone: Milestone | None) -> None:
+    if milestone is not None and milestone.project_id != project.pk:
+        raise exceptions.ValidationError({"milestone": ["Ce jalon n'appartient pas au projet."]})
+
+
+# --- Jalons, commentaires, mises à jour (P1) ----------------------------------------
+
+
+def save_milestone(
+    *, project: Project, actor: User, data: dict[str, Any], instance: Milestone | None = None
+) -> Milestone:
+    if not policies.can_manage_tasks(project, actor):
+        _forbid("Seuls le propriétaire et les responsables gèrent les jalons.")
+    _ensure_not_frozen(project)
+    data = dict(data)
+    milestone = instance or Milestone(project=project)
+    target = data.pop("status", milestone.status)
+    for field, value in data.items():
+        setattr(
+            milestone, field, to_plain_text(value) if field in {"title", "description"} else value
+        )
+    completed_now = target == Milestone.Status.COMPLETED and (
+        instance is None or instance.status != Milestone.Status.COMPLETED
+    )
+    if target == Milestone.Status.COMPLETED:
+        milestone.completed_at = milestone.completed_at if not completed_now else timezone.now()
+    else:
+        milestone.completed_at = None
+    milestone.status = target
+    milestone.save()
+    if instance is None:
+        record(project, actor, Verb.MILESTONE_CREATED, milestone, title=milestone.title)
+    if completed_now:
+        record(project, actor, Verb.MILESTONE_COMPLETED, milestone, title=milestone.title)
+    return milestone
+
+
+def delete_milestone(*, milestone: Milestone, actor: User) -> None:
+    if not policies.can_manage_tasks(milestone.project, actor):
+        _forbid("Seuls le propriétaire et les responsables gèrent les jalons.")
+    milestone.delete()
+
+
+def add_task_comment(*, task: ProjectTask, actor: User, content: str) -> TaskComment:
+    if not policies.can_contribute(task.project, actor):
+        _forbid("Les observateurs consultent les tâches sans les commenter.")
+    _ensure_not_frozen(task.project)
+    content = to_plain_text(content)
+    if not content:
+        raise exceptions.ValidationError({"content": ["Le commentaire est vide."]})
+    comment = TaskComment.objects.create(task=task, author=actor, content=content)
+    if task.assignee_id and task.assignee_id != actor.pk:
+        notify(
+            task.assignee,
+            type=Notification.Type.TASK_ASSIGNED,
+            title=f"Nouveau commentaire sur la tâche « {task.title} »",
+            actor=actor,
+            target=task.project,
+            target_url=f"{project_url(task.project)}/taches",
+        )
+    return comment
+
+
+@transaction.atomic
+def publish_update(*, project: Project, actor: User, title: str, content: str) -> ProjectUpdate:
+    if not policies.can_manage_tasks(project, actor):
+        _forbid("Seuls le propriétaire et les responsables publient des mises à jour.")
+    update = ProjectUpdate.objects.create(
+        project=project,
+        author=actor,
+        title=to_plain_text(title),
+        content=sanitize_rich_text(content),
+    )
+    record(project, actor, Verb.UPDATE_PUBLISHED, update, title=update.title)
+    _notify_members(
+        project, actor=actor, title=f"Nouvelle mise à jour de « {project.name} » : {update.title}"
+    )
+    return update
+
+
+# --- Invitations directes (P1) ---------------------------------------------------------
+
+
+@transaction.atomic
+def invite(
+    *, project: Project, actor: User, invitee: User, role: str, message: str = ""
+) -> ProjectInvitation:
+    if not policies.can_manage_members(project, actor):
+        _forbid("Seuls le propriétaire et les responsables habilités invitent des membres.")
+    _ensure_not_frozen(project)
+    if role == Role.MANAGER and not policies.is_owner(project, actor):
+        _forbid("Seul le propriétaire peut inviter un responsable.")
+    if not invitee.is_active:
+        raise BusinessRuleViolation("Ce compte n'est plus actif.", code="inactive_account")
+    if policies.membership(project, invitee) is not None:
+        raise BusinessRuleViolation("Ce membre fait déjà partie du projet.", code="already_member")
+    try:
+        with transaction.atomic():
+            invitation = ProjectInvitation.objects.create(
+                project=project,
+                invitee=invitee,
+                invited_by=actor,
+                role=role,
+                message=to_plain_text(message),
+            )
+    except IntegrityError as exc:
+        raise BusinessRuleViolation(
+            "Une invitation est déjà en attente.", code="duplicate_invitation"
+        ) from exc
+    notify(
+        invitee,
+        type=Notification.Type.PROJECT_INVITATION,
+        title=f"{actor.username} vous invite à rejoindre « {project.name} »",
+        actor=actor,
+        target=project,
+        target_url=project_url(project),
+    )
+    return invitation
+
+
+def _answer_invitation(invitation: ProjectInvitation, target: str) -> ProjectInvitation:
+    ensure_transition(INVITATION_TRANSITIONS, invitation.status, target)
+    invitation.status = target
+    invitation.responded_at = timezone.now()
+    invitation.save(update_fields=["status", "responded_at", "updated_at"])
+    return invitation
+
+
+@transaction.atomic
+def accept_invitation(*, invitation: ProjectInvitation, actor: User) -> ProjectMember:
+    invitation = ProjectInvitation.objects.select_for_update().get(pk=invitation.pk)
+    if invitation.invitee_id != actor.pk:
+        _forbid("Seule la personne invitée peut répondre.")
+    project = Project.objects.select_for_update().get(pk=invitation.project_id)
+    _ensure_not_frozen(project)
+    _answer_invitation(invitation, ProjectInvitation.Status.ACCEPTED)
+    if policies.membership(project, actor) is not None:
+        raise BusinessRuleViolation("Vous faites déjà partie du projet.", code="already_member")
+    member = ProjectMember.objects.create(project=project, user=actor, role=invitation.role)
+    JoinRequest.objects.filter(
+        project=project, user=actor, status=JoinRequest.Status.PENDING
+    ).update(
+        status=JoinRequest.Status.ACCEPTED,
+        reviewed_at=timezone.now(),
+        reviewed_by=invitation.invited_by,
+    )
+    record(project, actor, Verb.MEMBER_JOINED, member, role=member.role, via="invitation")
+    return member
+
+
+def decline_invitation(*, invitation: ProjectInvitation, actor: User) -> ProjectInvitation:
+    if invitation.invitee_id != actor.pk:
+        _forbid("Seule la personne invitée peut répondre.")
+    return _answer_invitation(invitation, ProjectInvitation.Status.DECLINED)
+
+
+def cancel_invitation(*, invitation: ProjectInvitation, actor: User) -> ProjectInvitation:
+    if not policies.can_manage_members(invitation.project, actor):
+        _forbid("Seuls le propriétaire et les responsables habilités annulent une invitation.")
+    return _answer_invitation(invitation, ProjectInvitation.Status.CANCELLED)

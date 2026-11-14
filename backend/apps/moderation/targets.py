@@ -24,6 +24,8 @@ class TargetSpec:
     preview: Callable[[Model], dict[str, Any]]
     visible_to: Callable[[Model, Any], bool]
     actions: set[str] = field(default_factory=set)
+    # Masquage / restauration propre à la cible : (objet, masquer ?) -> (avant, après).
+    hide: Callable[[Model, bool], tuple[str, str]] | None = None
 
 
 REGISTRY: dict[str, TargetSpec] = {}
@@ -43,6 +45,24 @@ def _excerpt(text: str, length: int = 200) -> str:
 
     plain = to_plain_text(text)
     return plain if len(plain) <= length else f"{plain[: length - 1]}…"
+
+
+def flag_hider(flag: str = "hidden_by_moderation") -> Callable[[Model, bool], tuple[str, str]]:
+    """Masquage par drapeau booléen (projets, opportunités, événements, communautés…)."""
+
+    def hide(obj: Model, wanted: bool) -> tuple[str, str]:
+        from common.exceptions import BusinessRuleViolation
+
+        current = getattr(obj, flag)
+        if current == wanted:
+            raise BusinessRuleViolation(
+                "La cible est déjà dans cet état.", code="invalid_transition"
+            )
+        setattr(obj, flag, wanted)
+        obj.save(update_fields=[flag, "updated_at"])
+        return ("HIDDEN" if current else "VISIBLE"), ("HIDDEN" if wanted else "VISIBLE")
+
+    return hide
 
 
 def account_state(account: Any) -> str:
@@ -151,5 +171,6 @@ def _ensure_defaults() -> None:
             },
             visible_to=lambda project, user: project_policies.can_view(project, user),
             actions={Action.WARNING, Action.HIDE, Action.RESTORE} | ACCOUNT_ACTIONS,
+            hide=flag_hider(),
         ),
     )

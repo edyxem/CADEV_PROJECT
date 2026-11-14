@@ -14,7 +14,6 @@ from apps.community import services as community_services
 from apps.community.models import Answer, Comment, ContentStatus, Post
 from apps.notifications.models import Notification
 from apps.notifications.services import notify
-from apps.projects.models import Project
 from common.exceptions import BusinessRuleViolation
 from common.permissions import is_admin, is_moderator
 from common.sanitization import to_plain_text
@@ -196,25 +195,17 @@ def _apply_account_action(
     return previous, targets.account_state(account), expires_at
 
 
-def _apply_content_action(action: str, moderator: User, target: Model) -> tuple[str, str]:
+def _apply_content_action(
+    action: str, moderator: User, spec: targets.TargetSpec, target: Model
+) -> tuple[str, str]:
     if isinstance(target, Post | Comment | Answer):
         previous = community_services.moderate_status(
             target, target=CONTENT_TARGET_STATUS[action], actor=moderator
         )
         return previous, target.status
-    if isinstance(target, Project):
-        previous = "HIDDEN" if target.hidden_by_moderation else "VISIBLE"
-        wanted = action == Action.HIDE
-        if target.hidden_by_moderation == wanted:
-            raise BusinessRuleViolation(
-                "Le projet est déjà dans cet état.", code="invalid_transition"
-            )
-        target.hidden_by_moderation = wanted
-        target.save(update_fields=["hidden_by_moderation", "updated_at"])
-        return previous, "HIDDEN" if wanted else "VISIBLE"
-    raise BusinessRuleViolation(
-        "Action impossible sur cette cible.", code="unsupported_action"
-    )  # pragma: no cover
+    if spec.hide is not None and action in {Action.HIDE, Action.RESTORE}:
+        return spec.hide(target, action == Action.HIDE)
+    raise BusinessRuleViolation("Action impossible sur cette cible.", code="unsupported_action")
 
 
 @transaction.atomic
@@ -264,7 +255,7 @@ def take_action(
     previous = new = ""
     expires_at = None
     if action in CONTENT_TARGET_STATUS:
-        previous, new = _apply_content_action(action, moderator, target)
+        previous, new = _apply_content_action(action, moderator, spec, target)
     elif action in {Action.SUSPEND, Action.UNSUSPEND, Action.BAN, Action.UNBAN}:
         previous, new, expires_at = _apply_account_action(action, moderator, account, duration_days)
 

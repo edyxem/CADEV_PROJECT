@@ -174,6 +174,7 @@ class OwnerProfileSerializer(PublicProfileSerializer):
             "profile_visibility",
             "show_city",
             "show_availability",
+            "show_reputation",
             "updated_at",
         ]
         read_only_fields = ["username", "avatar", "skills", "links", "member_since", "updated_at"]

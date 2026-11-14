@@ -247,3 +247,19 @@ class TestDashboard:
 
     def test_dashboard_requires_authentication(self, api_client):
         assert api_client.get("/api/v1/me/dashboard/").status_code == 401
+
+
+class TestHiddenReputation:
+    def test_member_can_hide_reputation_badges_and_recommendations(
+        self, client_for, api_client, user, moderator
+    ):
+        response = client_for(user).patch(
+            "/api/v1/profiles/me/", {"show_reputation": False}, format="json"
+        )
+
+        assert response.json()["show_reputation"] is False
+        assert api_client.get("/api/v1/profiles/awa/reputation/").status_code == 404
+        assert api_client.get("/api/v1/profiles/awa/recommendations/").status_code == 404
+        assert client_for(user).get("/api/v1/profiles/awa/reputation/").status_code == 200
+        assert client_for(moderator).get("/api/v1/profiles/awa/recommendations/").status_code == 200
+        assert api_client.get("/api/v1/profiles/awa/").status_code == 200

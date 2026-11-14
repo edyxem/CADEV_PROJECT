@@ -21,6 +21,7 @@ from .models import (
     CONTENT_TRANSITIONS,
     Answer,
     AnswerVote,
+    Bookmark,
     Comment,
     ContentStatus,
     Post,
@@ -379,3 +380,19 @@ def vote_answer(*, answer: Answer, user: User, active: bool | None = None) -> tu
     return _toggle_vote(
         vote_model=AnswerVote, target_field="answer", target=answer, user=user, active=active
     )
+
+
+# --- Favoris (P1) ------------------------------------------------------------------
+
+
+@transaction.atomic
+def bookmark_post(*, post: Post, user: User, active: bool | None = None) -> bool:
+    """Enregistre ou retire un favori, de façon idempotente ; renvoie l'état final."""
+    _ensure_published(post)
+    exists = Bookmark.objects.filter(user=user, post=post).exists()
+    wanted = (not exists) if active is None else active
+    if wanted and not exists:
+        Bookmark.objects.get_or_create(user=user, post=post)
+    elif not wanted and exists:
+        Bookmark.objects.filter(user=user, post=post).delete()
+    return wanted

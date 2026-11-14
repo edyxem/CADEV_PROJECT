@@ -224,3 +224,18 @@ class AnswerVote(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=["user", "answer"], name="answer_vote_unique")
         ]
+
+
+class Bookmark(BaseModel):
+    """Publication enregistrée par un membre (P1)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bookmarks"
+    )
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="bookmarks")
+
+    class Meta:
+        verbose_name = "favori"
+        verbose_name_plural = "favoris"
+        ordering = ["-created_at"]
+        constraints = [models.UniqueConstraint(fields=["user", "post"], name="bookmark_unique")]

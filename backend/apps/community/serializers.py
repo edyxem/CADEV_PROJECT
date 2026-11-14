@@ -54,6 +54,7 @@ class PostListSerializer(serializers.ModelSerializer):
     answer_count = serializers.IntegerField(read_only=True)
     has_accepted_answer = serializers.BooleanField(read_only=True)
     has_voted = serializers.BooleanField(read_only=True)
+    has_bookmarked = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Post
@@ -72,6 +73,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "answer_count",
             "has_accepted_answer",
             "has_voted",
+            "has_bookmarked",
             "published_at",
             "last_activity_at",
             "created_at",
@@ -234,3 +236,7 @@ class VoteInputSerializer(serializers.Serializer):
 class VoteResultSerializer(serializers.Serializer):
     voted = serializers.BooleanField()
     vote_count = serializers.IntegerField()
+
+
+class BookmarkResultSerializer(serializers.Serializer):
+    bookmarked = serializers.BooleanField()

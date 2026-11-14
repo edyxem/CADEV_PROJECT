@@ -12,9 +12,11 @@ from rest_framework.views import APIView
 
 from apps.accounts.models import User
 from apps.community.serializers import PostListSerializer
+from apps.profiles.serializers import PublicProfileSerializer
+from apps.projects.serializers import ProjectListSerializer
 from common.schema import errors
 
-from . import services
+from . import discovery, services
 from .models import Follow
 from .serializers import (
     FollowCreateSerializer,
@@ -126,3 +128,41 @@ class FollowStatsView(APIView):
                 "following": Follow.objects.filter(follower=user).count(),
             }
         )
+
+
+@extend_schema(
+    tags=["Découverte"],
+    summary="Développeurs recommandés",
+    description="Profils publics partageant vos technologies (compétences déclarées et "
+    "technologies suivies), classés par nombre de technologies communes.",
+    responses={200: PublicProfileSerializer(many=True), **errors(401)},
+)
+class RecommendedDevelopersView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PublicProfileSerializer
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            from apps.profiles.models import DeveloperProfile
+
+            return DeveloperProfile.objects.none()
+        return discovery.recommended_developers(self.request.user)
+
+
+@extend_schema(
+    tags=["Découverte"],
+    summary="Projets recommandés",
+    description="Projets publics ouverts aux candidatures dont les technologies recoupent les "
+    "vôtres ; vos propres projets sont exclus.",
+    responses={200: ProjectListSerializer(many=True), **errors(401)},
+)
+class RecommendedProjectsView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProjectListSerializer
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            from apps.projects.models import Project
+
+            return Project.objects.none()
+        return discovery.recommended_projects(self.request.user)

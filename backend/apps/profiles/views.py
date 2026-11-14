@@ -16,11 +16,12 @@ from common.schema import errors
 
 from . import selectors, services
 from .filters import ProfileFilter
-from .models import DeveloperProfile, SocialLink
+from .models import DeveloperProfile, PortfolioItem, SocialLink
 from .serializers import (
     AvatarSerializer,
     ModerationProfileSerializer,
     OwnerProfileSerializer,
+    PortfolioItemSerializer,
     PublicProfileSerializer,
     RestrictedProfileSerializer,
     SkillInputSerializer,
@@ -235,3 +236,93 @@ class MyAvatarView(APIView):
     def delete(self, request: Request) -> Response:
         services.remove_avatar(_my_profile(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+MAX_PORTFOLIO_ITEMS = 20
+
+
+@extend_schema_view(
+    list=extend_schema(tags=ME_TAG, summary="Mon portfolio"),
+    create=extend_schema(
+        tags=ME_TAG, summary="Ajouter une réalisation", description="20 au maximum."
+    ),
+    partial_update=extend_schema(tags=ME_TAG, summary="Modifier une réalisation"),
+    destroy=extend_schema(tags=ME_TAG, summary="Supprimer une réalisation"),
+)
+class MyPortfolioViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PortfolioItemSerializer
+    pagination_class = None
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_queryset(self) -> QuerySet[PortfolioItem]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return PortfolioItem.objects.none()
+        return PortfolioItem.objects.filter(user=self.request.user).prefetch_related("technologies")
+
+    def perform_create(self, serializer: PortfolioItemSerializer) -> None:
+        if PortfolioItem.objects.filter(user=self.request.user).count() >= MAX_PORTFOLIO_ITEMS:
+            from common.exceptions import BusinessRuleViolation
+
+            raise BusinessRuleViolation(
+                f"{MAX_PORTFOLIO_ITEMS} réalisations au maximum.", code="portfolio_limit"
+            )
+        serializer.save(user=self.request.user)
+
+
+class PortfolioView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=TAG,
+        summary="Portfolio public d'un membre",
+        description="Réalisations déclarées et projets terminés dont le membre fait partie. "
+        "Profil privé : visible de son titulaire uniquement.",
+        responses={200: PortfolioItemSerializer(many=True), **errors(404)},
+    )
+    def get(self, request: Request, username: str) -> Response:
+        from apps.projects.models import Project, ProjectMember
+        from apps.projects.serializers import ProjectListSerializer
+
+        profile = get_object_or_404(
+            DeveloperProfile.objects.select_related("user"),
+            user__username__iexact=username,
+            user__is_active=True,
+        )
+        if (
+            not profile.is_public
+            and request.user.pk != profile.user_id
+            and not is_moderator(request.user)
+        ):
+            from django.http import Http404
+
+            raise Http404
+        items = PortfolioItem.objects.filter(user=profile.user).prefetch_related("technologies")
+        completed = Project.objects.filter(
+            status=Project.Status.COMPLETED,
+            visibility=Project.Visibility.PUBLIC,
+            hidden_by_moderation=False,
+            memberships__user=profile.user,
+            memberships__status=ProjectMember.Status.ACTIVE,
+        ).distinct()
+        context = {"request": request}
+        return Response(
+            {
+                "items": PortfolioItemSerializer(items, many=True).data,
+                "completed_projects": ProjectListSerializer(
+                    _with_counts(completed), many=True, context=context
+                ).data,
+            }
+        )
+
+
+def _with_counts(queryset):
+    from apps.projects.selectors import _with_relations
+
+    return _with_relations(queryset)

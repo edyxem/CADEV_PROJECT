@@ -48,6 +48,7 @@ LOCAL_APPS = [
     "apps.mentorship",
     "apps.communities",
     "apps.events",
+    "apps.messaging",
     "apps.search",
 ]
 

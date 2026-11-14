@@ -19,5 +19,6 @@ urlpatterns = [
     path("", include("apps.mentorship.urls")),
     path("", include("apps.communities.urls")),
     path("", include("apps.events.urls")),
+    path("", include("apps.messaging.urls")),
     path("", include("apps.search.urls")),
 ]

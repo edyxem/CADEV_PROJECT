@@ -2,7 +2,10 @@
 
 from typing import Any
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
 
@@ -35,7 +38,7 @@ def notify(
         return None
     if not _wants(recipient, type):
         return None
-    return Notification.objects.create(
+    notification = Notification.objects.create(
         recipient=recipient,
         actor=actor,
         type=type,
@@ -45,6 +48,8 @@ def notify(
         target_id=getattr(target, "pk", None),
         target_url=target_url,
     )
+    _maybe_email(recipient, notification)
+    return notification
 
 
 def _wants(recipient: User, notification_type: str) -> bool:
@@ -79,3 +84,32 @@ def get_preferences(user: User):
 
     preferences, _ = NotificationPreference.objects.get_or_create(user=user)
     return preferences
+
+
+def _maybe_email(recipient: User, notification: Notification) -> None:
+    """Envoie aussi la notification par e-mail si le membre l'a demandé (P2).
+
+    Uniquement vers une adresse vérifiée, après validation de la transaction,
+    et sans jamais bloquer l'action en cas d'échec d'envoi.
+    """
+    if not recipient.email_verified:
+        return
+    try:
+        preferences: Any = recipient.notification_preferences
+    except ObjectDoesNotExist:
+        return
+    if notification.type not in (preferences.email_types or []):
+        return
+
+    def send() -> None:
+        link = f"{settings.FRONTEND_URL.rstrip('/')}{notification.target_url}"
+        body = f"{notification.title}\n\n{notification.message}\n\n{link}\n".strip()
+        send_mail(
+            notification.title,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [recipient.email],
+            fail_silently=True,
+        )
+
+    transaction.on_commit(send)

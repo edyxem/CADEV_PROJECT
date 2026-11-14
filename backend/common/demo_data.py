@@ -678,3 +678,22 @@ REPORTS = [
     ("kofi_mensah", "POST", "Gagnez 500 000 FCFA par jour sans travailler", "SPAM", ""),
     ("fatou_ndiaye", "PROFILE", "spam_demo", "SPAM", "Compte qui publie des offres douteuses."),
 ]
+
+# (auteur, membre recommandé, contexte)
+RECOMMENDATIONS = [
+    (
+        "awa_diop",
+        "kofi_mensah",
+        "Kofi a conçu toute l'interface d'AgriMarché avec rigueur et pédagogie.",
+    ),
+    (
+        "chinedu_okafor",
+        "ines_kabore",
+        "Inès a livré la saisie hors ligne de SantéLink dans les délais.",
+    ),
+    (
+        "kwame_asante",
+        "awa_diop",
+        "Awa a revu l'architecture de notre API et amélioré les performances.",
+    ),
+]

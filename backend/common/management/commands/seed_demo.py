@@ -17,6 +17,8 @@ from apps.moderation.models import Report
 from apps.profiles.models import SocialLink, UserSkill
 from apps.projects import services as projects
 from apps.projects.models import JoinRequest, Project, ProjectRoleNeed, ProjectTask
+from apps.reputation.models import Recommendation
+from apps.reputation.services import recommend, sync_users
 from common import demo_data as data
 
 
@@ -35,6 +37,7 @@ class Command(BaseCommand):
         self._answers_comments_votes(users, posts)
         self._projects(users)
         self._reports(users, posts)
+        self._recommendations(users)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Démo prête : {len(users)} membres, {len(posts)} publications, "
@@ -247,3 +250,16 @@ class Command(BaseCommand):
                     reason=reason,
                     details=details,
                 )
+
+    # --- Réputation -----------------------------------------------------------------
+
+    def _recommendations(self, users: dict[str, User]) -> None:
+        for recommender, recommended, context in data.RECOMMENDATIONS:
+            exists = Recommendation.objects.filter(
+                recommender=users[recommender], recommended=users[recommended]
+            ).exists()
+            if not exists:
+                recommend(
+                    recommender=users[recommender], recommended=users[recommended], context=context
+                )
+        sync_users(users.values())

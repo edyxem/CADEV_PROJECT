@@ -42,6 +42,7 @@ LOCAL_APPS = [
     "apps.community",
     "apps.projects",
     "apps.moderation",
+    "apps.social",
     "apps.search",
 ]
 

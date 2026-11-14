@@ -280,3 +280,16 @@ def test_project_hidden_by_moderation_leaves_public_spaces(api_client, client_fo
     assert api_client.get(detail(project)).status_code == 404
     assert client_for(user).get(detail(project)).status_code == 200
     assert client_for(moderator).get(detail(project)).status_code == 200
+
+
+def test_list_projects_of_a_member(api_client, user, other_user):
+    owned = make_project(user, name="Projet porté par Awa")
+    joined = make_project(other_user, name="Projet rejoint par Awa")
+    add_member(joined, user)
+    left = make_project(other_user, name="Projet quitté")
+    ProjectMember.objects.create(project=left, user=user, status="LEFT")
+    make_project(other_user, name="Projet sans Awa")
+
+    slugs = {item["slug"] for item in api_client.get(URL, {"member": "AWA"}).json()["results"]}
+
+    assert slugs == {owned.slug, joined.slug}

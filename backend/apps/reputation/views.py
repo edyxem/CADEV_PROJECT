@@ -36,7 +36,7 @@ EXPLANATION = (
 )
 
 
-def _visible_member(request: Request, username: str) -> User:
+def _visible_member(request: Request, username: str, *, reputation: bool = False) -> User:
     """Membre actif dont le profil est public, ou consulté par lui-même ou la modération."""
     user = get_object_or_404(
         User.objects.select_related("profile"), username__iexact=username, is_active=True
@@ -48,6 +48,10 @@ def _visible_member(request: Request, username: str) -> User:
         and request.user.pk != user.pk
         and not is_moderator(request.user)
     ):
+        raise Http404
+    # §I.3 : le membre peut masquer sa réputation, ses badges et recommandations.
+    hidden = reputation and profile is not None and not profile.show_reputation
+    if hidden and request.user.pk != user.pk and not is_moderator(request.user):
         raise Http404
     return user
 
@@ -63,7 +67,7 @@ class ReputationView(APIView):
         responses={200: ReputationSerializer, **errors(404)},
     )
     def get(self, request: Request, username: str) -> Response:
-        user = _visible_member(request, username)
+        user = _visible_member(request, username, reputation=True)
         achievements = UserAchievement.objects.filter(user=user).select_related("achievement")
         return Response(
             ReputationSerializer(
@@ -98,7 +102,7 @@ class RecommendationListCreateView(generics.GenericAPIView):
         responses={200: RecommendationSerializer(many=True), **errors(404)},
     )
     def get(self, request: Request, username: str) -> Response:
-        user = _visible_member(request, username)
+        user = _visible_member(request, username, reputation=True)
         queryset = Recommendation.objects.filter(
             recommended=user, recommender__is_active=True
         ).select_related("recommender__profile", "technology")

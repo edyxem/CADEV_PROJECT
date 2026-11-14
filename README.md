@@ -101,6 +101,8 @@ pre-commit install
 | `make test` | tests avec couverture |
 | `make lint` | ruff (lint + format) et contrôle des migrations |
 | `make check` | `check --deploy` avec les settings de production |
+| `make admin` | crée le premier compte administrateur |
+| `make backup` / `make restore DUMP=…` | sauvegarde / restauration ([procédure](docs/operations.md)) |
 | `python backend/manage.py rebuild_search_index` | reconstruit l'index de recherche |
 | `python backend/manage.py recompute_reputation` | recalcule réputations et badges |
 | `python backend/manage.py send_event_reminders` | rappels d'événements (à planifier via cron) |
@@ -147,7 +149,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ## Qualité
 
-- 489 tests, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
+- 492 tests, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
 - Permissions testées par rôle (anonyme, membre, auteur, autre membre, rôles projet,
   modérateur, administrateur), IDOR, non-fuite des champs privés, transitions interdites,
   limites de débit.
@@ -182,7 +184,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 | Fonction | Statut | Où |
 |---|---|---|
-| Profils enrichis (projets, contributions, disponibilité détaillée) | Fait | `profiles`, `reputation` |
+| Profils enrichis (projets via `GET /projects/?member=`, contributions, disponibilité détaillée) | Fait | `profiles`, `projects`, `reputation` |
 | Filtres avancés de découverte de développeurs | Fait | `profiles`, `search` |
 | Articles / tutoriels avec mise en forme | Fait (HTML assaini) | `community` |
 | Réponses acceptées | Fait | `community` |
@@ -195,7 +197,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 | Pièces jointes de projet | Non fait | — |
 | Badges et réputation fondés sur des actions réelles | Fait | `reputation` ([règles](docs/reputation.md)) |
 | Tableau de bord utilisateur | Fait | `GET /me/dashboard/` |
-| Profil privé / public et paramètres de notification | Fait | `profiles`, `notifications` |
+| Profil privé / public, champs masquables (ville, disponibilité, liens, réputation) et paramètres de notification | Fait | `profiles`, `notifications` |
 | Interface anglaise préparée | Partiel : `LocaleMiddleware` et `LANGUAGES` en place, messages encore en français uniquement | `config` |
 
 ### P2 — Extensions
@@ -246,4 +248,5 @@ Choix et limites : [ADR 0006](docs/adr/0006-extensions-p2.md).
 - [Guide d'intégration frontend](docs/api.md)
 - [Modération](docs/moderation.md)
 - [Réputation et badges](docs/reputation.md)
+- [Exploitation : déploiement, sauvegarde, restauration](docs/operations.md)
 - [Décisions d'architecture](docs/adr)

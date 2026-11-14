@@ -87,6 +87,9 @@ class DeveloperProfile(BaseModel):
     )
     show_city = models.BooleanField("ville visible", default=True)
     show_availability = models.BooleanField("disponibilité visible", default=True)
+    show_reputation = models.BooleanField(
+        "réputation, badges et recommandations visibles", default=True
+    )
 
     class Meta:
         verbose_name = "profil développeur"

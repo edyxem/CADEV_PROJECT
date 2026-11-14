@@ -122,6 +122,10 @@ Les messages sont en français et peuvent être affichés tels quels.
   is_private: true}` aux autres membres.
 - `GET|PATCH /profiles/me/`, `GET|PUT|PATCH /profiles/me/skills/`,
   `/profiles/me/links/`, `PUT|DELETE /profiles/me/avatar/` (multipart, champ `avatar`).
+- `show_city`, `show_availability` et `show_reputation` (score, badges, recommandations)
+  masquent ces éléments aux autres membres ; le titulaire les voit toujours.
+- Projets d'un membre : `GET /projects/?member={username}`.
+- La recherche par auteur (`author=`) ne renvoie que les auteurs au profil public.
 - Une compétence affiche `verification_label` ; `is_verified` n'est vrai qu'après validation
   par des pairs (jamais pour un simple lien).
 

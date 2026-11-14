@@ -32,17 +32,17 @@ def _with_relations(queryset: QuerySet[Project]) -> QuerySet[Project]:
 def public_projects() -> QuerySet[Project]:
     """Projets publics non archivés : base de la liste et de la recherche."""
     return _with_relations(
-        Project.objects.filter(visibility=Project.Visibility.PUBLIC).exclude(
-            status=Project.Status.ARCHIVED
-        )
+        Project.objects.filter(
+            visibility=Project.Visibility.PUBLIC, hidden_by_moderation=False
+        ).exclude(status=Project.Status.ARCHIVED)
     )
 
 
 def visible_projects(user: Any) -> QuerySet[Project]:
-    """Projets ouvrables en détail : publics, ou privés dont le lecteur est membre."""
+    """Projets ouvrables en détail : publics non masqués, ou ceux dont le lecteur est membre."""
     queryset = Project.objects.all()
     if not is_moderator(user):
-        condition = Q(visibility=Project.Visibility.PUBLIC)
+        condition = Q(visibility=Project.Visibility.PUBLIC, hidden_by_moderation=False)
         if user is not None and user.is_authenticated:
             condition |= Q(memberships__user=user, memberships__status=ACTIVE)
         queryset = queryset.filter(condition).distinct()

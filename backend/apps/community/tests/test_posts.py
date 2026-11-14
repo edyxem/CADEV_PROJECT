@@ -269,3 +269,15 @@ class TestFeed:
 
         with django_assert_max_num_queries(6):
             api_client.get(URL)
+
+
+def test_author_filter_ignores_private_profiles(api_client, user, other_user):
+    PostFactory(author=user)
+    PostFactory(author=other_user)
+    other_user.profile.profile_visibility = "PRIVATE"
+    other_user.profile.save()
+
+    assert api_client.get(URL, {"author": "awa"}).json()["count"] == 1
+    assert api_client.get(URL, {"author": "kofi"}).json()["count"] == 0
+    assert api_client.get("/api/v1/search/posts/", {"author": "kofi"}).json()["count"] == 0
+    assert api_client.get(URL).json()["count"] == 2

@@ -11,13 +11,22 @@ class PostFilter(django_filters.FilterSet):
     category = django_filters.CharFilter(field_name="category__slug")
     technology = django_filters.CharFilter(method="filter_technology")
     tag = django_filters.CharFilter(method="filter_tag")
-    author = django_filters.CharFilter(field_name="author__username", lookup_expr="iexact")
+    author = django_filters.CharFilter(
+        method="filter_author", label="Nom d'utilisateur (profils publics uniquement)"
+    )
     q = django_filters.CharFilter(method="filter_q", label="Mots du titre ou du contenu")
     unanswered = django_filters.BooleanFilter(method="filter_unanswered")
 
     class Meta:
         model = Post
         fields: list[str] = []
+
+    def filter_author(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        """§F.1 : on ne recherche par auteur que si son profil est public."""
+        return queryset.filter(
+            author__username__iexact=value.strip(),
+            author__profile__profile_visibility="PUBLIC",
+        )
 
     def filter_technology(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         return queryset.filter(technologies__slug=value.lower()).distinct()

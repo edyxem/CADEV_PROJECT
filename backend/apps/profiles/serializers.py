@@ -12,7 +12,7 @@ from apps.catalog.serializers import (
 )
 from common.sanitization import to_plain_text
 
-from .models import DeveloperProfile, Language, SocialLink, UserSkill
+from .models import DeveloperProfile, Language, PortfolioItem, SocialLink, UserSkill
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -215,3 +215,29 @@ class ModerationProfileSerializer(OwnerProfileSerializer):
 
 class AvatarSerializer(serializers.Serializer):
     avatar = serializers.ImageField()
+
+
+class PortfolioItemSerializer(serializers.ModelSerializer):
+    technologies = serializers.SlugRelatedField(
+        slug_field="slug",
+        many=True,
+        required=False,
+        queryset=Technology.objects.filter(is_active=True),
+    )
+    project = serializers.SlugRelatedField(slug_field="slug", read_only=True)
+
+    class Meta:
+        model = PortfolioItem
+        fields = ["id", "title", "description", "url", "technologies", "project", "sort_order"]
+        read_only_fields = ["id", "project"]
+
+    def validate_url(self, value: str) -> str:
+        if value and not value.lower().startswith(("http://", "https://")):
+            raise serializers.ValidationError("Seuls les liens http et https sont acceptés.")
+        return value
+
+    def validate_title(self, value: str) -> str:
+        return to_plain_text(value)
+
+    def validate_description(self, value: str) -> str:
+        return to_plain_text(value)

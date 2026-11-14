@@ -171,3 +171,27 @@ class SocialLink(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.get_platform_display()} — {self.url}"
+
+
+class PortfolioItem(BaseModel):
+    """Réalisation présentée sur le profil (P2) ; un lien n'en fait pas une preuve vérifiée."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="portfolio_items"
+    )
+    title = models.CharField(max_length=120)
+    description = models.TextField(blank=True, max_length=2000)
+    url = models.URLField(max_length=300, blank=True, validators=[validate_http_url])
+    technologies = models.ManyToManyField(Technology, blank=True, related_name="portfolio_items")
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    sort_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "réalisation"
+        verbose_name_plural = "réalisations"
+        ordering = ["sort_order", "-created_at"]
+
+    def __str__(self) -> str:
+        return self.title

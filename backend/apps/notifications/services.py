@@ -19,14 +19,16 @@ def notify(
     actor: User | None = None,
     target: Model | None = None,
     target_url: str = "",
+    include_inactive: bool = False,
 ) -> Notification | None:
     """Crée une notification, sauf pour sa propre action ou un compte désactivé.
 
     Le texte ne doit contenir que des informations déjà visibles par le
     destinataire (titres publics, noms d'utilisateur) : jamais d'e-mail,
-    de motif de signalement ni de contenu privé.
+    d'identité de signaleur ni de contenu privé. ``include_inactive`` sert aux
+    décisions de modération, que le membre suspendu doit pouvoir lire à son retour.
     """
-    if recipient is None or not recipient.is_active:
+    if recipient is None or (not recipient.is_active and not include_inactive):
         return None
     if actor is not None and actor.pk == recipient.pk:
         return None

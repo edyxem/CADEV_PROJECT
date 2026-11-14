@@ -14,6 +14,7 @@ from apps.notifications.services import notify
 from common.exceptions import BusinessRuleViolation
 from common.permissions import is_admin, is_moderator
 from common.sanitization import has_visible_text, sanitize_rich_text, to_plain_text
+from common.search import SEARCH_CONFIG
 from common.transitions import ensure_transition
 
 from .models import (
@@ -47,11 +48,11 @@ def clean_rich_content(value: str, *, required: bool = True) -> str:
 
 
 def refresh_search_vector(post: Post) -> None:
-    """Indexe titre (poids A), contenu (B) et environnement (C) en français."""
+    """Indexe titre (poids A), contenu (B) et environnement (C), en français sans accents."""
     Post.all_objects.filter(pk=post.pk).update(
-        search_vector=SearchVector("title", weight="A", config="french")
-        + SearchVector("content", weight="B", config="french")
-        + SearchVector("environment", weight="C", config="french")
+        search_vector=SearchVector("title", weight="A", config=SEARCH_CONFIG)
+        + SearchVector("content", weight="B", config=SEARCH_CONFIG)
+        + SearchVector("environment", weight="C", config=SEARCH_CONFIG)
     )
 
 

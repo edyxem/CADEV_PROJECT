@@ -220,6 +220,9 @@ SPECTACULAR_SETTINGS = {
         "ModerationActionTypeEnum": "apps.moderation.models.ModerationAction.ActionType",
         "ReportTargetTypeEnum": "apps.moderation.models.TargetType",
         "FollowTargetTypeEnum": "apps.social.models.Follow.TargetType",
+        "GlobalRoleEnum": "apps.accounts.models.User.Role",
+        "ProjectRoleEnum": "apps.projects.models.ProjectMember.Role",
+        "AssignableProjectRoleEnum": "apps.projects.models.ASSIGNABLE_ROLE_CHOICES",
     },
 }
 

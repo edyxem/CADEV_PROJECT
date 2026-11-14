@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import JoinRequest, Project, ProjectMember, ProjectRoleNeed, ProjectTask
+from .models import (
+    JoinRequest,
+    Milestone,
+    Project,
+    ProjectActivity,
+    ProjectInvitation,
+    ProjectMember,
+    ProjectRoleNeed,
+    ProjectTask,
+    ProjectUpdate,
+)
 
 
 class MemberInline(admin.TabularInline):
@@ -48,3 +58,39 @@ class ProjectTaskAdmin(admin.ModelAdmin):
     search_fields = ["title", "project__name", "assignee__username"]
     list_select_related = ["project", "assignee"]
     raw_id_fields = ["project", "assignee", "created_by"]
+
+
+@admin.register(Milestone)
+class MilestoneAdmin(admin.ModelAdmin):
+    list_display = ["title", "project", "status", "due_date"]
+    list_filter = ["status"]
+    search_fields = ["title", "project__name"]
+    raw_id_fields = ["project"]
+
+
+@admin.register(ProjectUpdate)
+class ProjectUpdateAdmin(admin.ModelAdmin):
+    list_display = ["title", "project", "author", "created_at"]
+    search_fields = ["title", "project__name"]
+    raw_id_fields = ["project", "author"]
+
+
+@admin.register(ProjectInvitation)
+class ProjectInvitationAdmin(admin.ModelAdmin):
+    list_display = ["invitee", "project", "role", "status", "created_at"]
+    list_filter = ["status", "role"]
+    search_fields = ["invitee__username", "project__name"]
+    raw_id_fields = ["project", "invitee", "invited_by"]
+
+
+@admin.register(ProjectActivity)
+class ProjectActivityAdmin(admin.ModelAdmin):
+    list_display = ["project", "actor", "verb", "created_at"]
+    list_filter = ["verb"]
+    search_fields = ["project__name", "actor__username"]
+
+    def has_add_permission(self, request) -> bool:
+        return False
+
+    def has_change_permission(self, request, obj=None) -> bool:
+        return False

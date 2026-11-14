@@ -20,18 +20,32 @@ from common.throttling import ActionThrottleMixin
 
 from . import policies, selectors, services
 from .filters import ProjectFilter
-from .models import JoinRequest, Project, ProjectMember, ProjectRoleNeed, ProjectTask
+from .models import (
+    JoinRequest,
+    Milestone,
+    Project,
+    ProjectInvitation,
+    ProjectMember,
+    ProjectRoleNeed,
+    ProjectTask,
+)
 from .serializers import (
+    ActivitySerializer,
+    InvitationCreateSerializer,
+    InvitationSerializer,
     JoinRequestCreateSerializer,
     JoinRequestDecisionSerializer,
     JoinRequestSerializer,
     MemberSerializer,
     MemberUpdateSerializer,
+    MilestoneSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
+    ProjectUpdateSerializer,
     ProjectWriteSerializer,
     RoleNeedSerializer,
     RoleNeedWriteSerializer,
+    TaskCommentSerializer,
     TaskSerializer,
     TaskWriteSerializer,
     TransferOwnershipSerializer,
@@ -354,6 +368,178 @@ class ProjectViewSet(ActionThrottleMixin, viewsets.ModelViewSet):
         )
         return Response(RoleNeedSerializer(role).data)
 
+    # --- Suivi avancé (P1) -----------------------------------------------------------
+
+    def _require(self, allowed: bool, message: str) -> None:
+        if not allowed:
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied(message)
+
+    @extend_schema(
+        tags=TASK_TAG,
+        summary="Jalons du projet",
+        description="GET : quiconque voit le projet. POST : propriétaire et responsables.",
+        request=MilestoneSerializer,
+        responses={
+            200: MilestoneSerializer(many=True),
+            201: MilestoneSerializer,
+            **errors(400, 401, 403, 404),
+        },
+    )
+    @action(detail=True, methods=["get", "post"], permission_classes=[IsAuthenticatedOrReadOnly])
+    def milestones(self, request: Request, slug: str | None = None) -> Response:
+        project = self.get_object()
+        if request.method == "GET":
+            return Response(MilestoneSerializer(project.milestones.all(), many=True).data)
+        serializer = MilestoneSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        milestone = services.save_milestone(
+            project=project, actor=request.user, data=serializer.validated_data
+        )
+        return Response(MilestoneSerializer(milestone).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        tags=TASK_TAG,
+        summary="Modifier ou supprimer un jalon",
+        description="`status=COMPLETED` marque le jalon comme atteint.",
+        request=MilestoneSerializer,
+        responses={200: MilestoneSerializer, 204: None, **errors(400, 401, 403, 404)},
+    )
+    @action(
+        detail=True,
+        methods=["patch", "delete"],
+        url_path=f"milestones/(?P<milestone_id>{UUID_RE})",
+        permission_classes=[IsAuthenticated],
+    )
+    def milestone_detail(
+        self, request: Request, slug: str | None = None, milestone_id: str | None = None
+    ) -> Response:
+        project = self.get_object()
+        milestone = get_object_or_404(Milestone, pk=milestone_id, project=project)
+        if request.method == "DELETE":
+            services.delete_milestone(milestone=milestone, actor=request.user)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = MilestoneSerializer(milestone, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        milestone = services.save_milestone(
+            project=project, actor=request.user, data=serializer.validated_data, instance=milestone
+        )
+        return Response(MilestoneSerializer(milestone).data)
+
+    @extend_schema(
+        tags=TAG,
+        summary="Mises à jour du projet",
+        description="GET : quiconque voit le projet. POST : propriétaire et responsables ; les "
+        "membres sont notifiés.",
+        request=ProjectUpdateSerializer,
+        responses={
+            200: ProjectUpdateSerializer(many=True),
+            201: ProjectUpdateSerializer,
+            **errors(400, 401, 403, 404),
+        },
+    )
+    @action(detail=True, methods=["get", "post"], permission_classes=[IsAuthenticatedOrReadOnly])
+    def updates(self, request: Request, slug: str | None = None) -> Response:
+        project = self.get_object()
+        context = self.get_serializer_context()
+        if request.method == "GET":
+            page = self.paginate_queryset(project.updates.select_related("author__profile"))
+            return self.get_paginated_response(
+                ProjectUpdateSerializer(page, many=True, context=context).data
+            )
+        serializer = ProjectUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update = services.publish_update(
+            project=project, actor=request.user, **serializer.validated_data
+        )
+        return Response(
+            ProjectUpdateSerializer(update, context=context).data, status=status.HTTP_201_CREATED
+        )
+
+    @extend_schema(
+        tags=TAG,
+        summary="Fil d'activité et historique",
+        description="Réservé aux membres du projet (et à la modération).",
+        responses={200: ActivitySerializer(many=True), **errors(401, 403, 404)},
+    )
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
+    def activity(self, request: Request, slug: str | None = None) -> Response:
+        project = self.get_object()
+        self._require(
+            policies.can_view_tasks(project, request.user), "Réservé aux membres du projet."
+        )
+        page = self.paginate_queryset(project.activities.select_related("actor__profile"))
+        return self.get_paginated_response(
+            ActivitySerializer(page, many=True, context=self.get_serializer_context()).data
+        )
+
+    @extend_schema(
+        tags=TASK_TAG,
+        summary="Tableau Kanban",
+        description="Tâches regroupées par statut (une colonne par statut). Réservé aux membres.",
+        responses={200: TaskSerializer(many=True), **errors(401, 403, 404)},
+    )
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
+    def board(self, request: Request, slug: str | None = None) -> Response:
+        project = self.get_object()
+        self._require(
+            policies.can_view_tasks(project, request.user), "Réservé aux membres du projet."
+        )
+        context = self.get_serializer_context()
+        columns = {value: [] for value in ProjectTask.Status.values}
+        for task in selectors.project_tasks(project):
+            columns[task.status].append(TaskSerializer(task, context=context).data)
+        labels = dict(ProjectTask.Status.choices)
+        return Response(
+            [
+                {"status": value, "label": labels[value], "tasks": tasks}
+                for value, tasks in columns.items()
+            ]
+        )
+
+    @extend_schema(
+        tags=TEAM_TAG,
+        summary="Invitations du projet",
+        description="Propriétaire et responsables habilités : lister et inviter directement un "
+        "membre (le rôle MANAGER est réservé au propriétaire).",
+        request=InvitationCreateSerializer,
+        responses={
+            200: InvitationSerializer(many=True),
+            201: InvitationSerializer,
+            **errors(400, 401, 403, 404, 409),
+        },
+    )
+    @action(detail=True, methods=["get", "post"], permission_classes=[IsAuthenticated])
+    def invitations(self, request: Request, slug: str | None = None) -> Response:
+        project = self.get_object()
+        context = self.get_serializer_context()
+        self._require(
+            policies.can_manage_members(project, request.user),
+            "Réservé au propriétaire et aux responsables habilités.",
+        )
+        if request.method == "GET":
+            queryset = project.invitations.select_related(
+                "invitee__profile", "invited_by__profile", "project"
+            )
+            page = self.paginate_queryset(queryset)
+            return self.get_paginated_response(
+                InvitationSerializer(page, many=True, context=context).data
+            )
+        serializer = InvitationCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        invitation = services.invite(
+            project=project,
+            actor=request.user,
+            invitee=data["username"],
+            role=data["role"],
+            message=data.get("message", ""),
+        )
+        return Response(
+            InvitationSerializer(invitation, context=context).data, status=status.HTTP_201_CREATED
+        )
+
     # --- Tâches ---------------------------------------------------------------------
 
     @extend_schema(
@@ -546,7 +732,7 @@ class TaskViewSet(
 ):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
-    http_method_names = ["get", "patch", "delete", "head", "options"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self) -> QuerySet[ProjectTask]:
         if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
@@ -572,3 +758,113 @@ class TaskViewSet(
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         services.delete_task(task=self.get_object(), actor=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        tags=TASK_TAG,
+        summary="Commentaires d'une tâche",
+        description="Membres du projet ; les observateurs lisent sans commenter.",
+        request=TaskCommentSerializer,
+        responses={
+            200: TaskCommentSerializer(many=True),
+            201: TaskCommentSerializer,
+            **errors(400, 401, 403, 404),
+        },
+    )
+    @action(detail=True, methods=["get", "post"])
+    def comments(self, request: Request, pk: str | None = None) -> Response:
+        task = self.get_object()
+        context = self.get_serializer_context()
+        if request.method == "GET":
+            queryset = task.comments.select_related("author__profile")
+            return Response(TaskCommentSerializer(queryset, many=True, context=context).data)
+        serializer = TaskCommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = services.add_task_comment(
+            task=task, actor=request.user, content=serializer.validated_data["content"]
+        )
+        return Response(
+            TaskCommentSerializer(comment, context=context).data, status=status.HTTP_201_CREATED
+        )
+
+
+@extend_schema_view(
+    retrieve=extend_schema(
+        tags=TEAM_TAG,
+        summary="Consulter une invitation",
+        responses={200: InvitationSerializer, **errors(401, 404)},
+    ),
+)
+class InvitationViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InvitationSerializer
+
+    def get_queryset(self) -> QuerySet[ProjectInvitation]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return ProjectInvitation.objects.none()
+        return ProjectInvitation.objects.select_related(
+            "project", "invitee__profile", "invited_by__profile"
+        )
+
+    def get_object(self) -> ProjectInvitation:
+        invitation = super().get_object()
+        user = self.request.user
+        if invitation.invitee_id != user.pk and not policies.can_manage_members(
+            invitation.project, user
+        ):
+            raise Http404
+        return invitation
+
+    def _respond(self, invitation: ProjectInvitation) -> Response:
+        invitation.refresh_from_db()
+        return Response(
+            InvitationSerializer(invitation, context=self.get_serializer_context()).data
+        )
+
+    @extend_schema(
+        tags=TEAM_TAG,
+        summary="Mes invitations reçues",
+        responses={200: InvitationSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def mine(self, request: Request) -> Response:
+        page = self.paginate_queryset(self.get_queryset().filter(invitee=request.user))
+        return self.get_paginated_response(
+            InvitationSerializer(page, many=True, context=self.get_serializer_context()).data
+        )
+
+    @extend_schema(
+        tags=TEAM_TAG,
+        summary="Accepter une invitation",
+        description="Réservé à la personne invitée ; crée le membre dans la même transaction.",
+        request=None,
+        responses={200: InvitationSerializer, **errors(401, 403, 404, 409)},
+    )
+    @action(detail=True, methods=["post"])
+    def accept(self, request: Request, pk: str | None = None) -> Response:
+        invitation = self.get_object()
+        services.accept_invitation(invitation=invitation, actor=request.user)
+        return self._respond(invitation)
+
+    @extend_schema(
+        tags=TEAM_TAG,
+        summary="Décliner une invitation",
+        request=None,
+        responses={200: InvitationSerializer, **errors(401, 403, 404, 409)},
+    )
+    @action(detail=True, methods=["post"])
+    def decline(self, request: Request, pk: str | None = None) -> Response:
+        invitation = self.get_object()
+        services.decline_invitation(invitation=invitation, actor=request.user)
+        return self._respond(invitation)
+
+    @extend_schema(
+        tags=TEAM_TAG,
+        summary="Annuler une invitation",
+        request=None,
+        responses={200: InvitationSerializer, **errors(401, 403, 404, 409)},
+    )
+    @action(detail=True, methods=["post"])
+    def cancel(self, request: Request, pk: str | None = None) -> Response:
+        invitation = self.get_object()
+        services.cancel_invitation(invitation=invitation, actor=request.user)
+        return self._respond(invitation)

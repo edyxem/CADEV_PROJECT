@@ -6,5 +6,6 @@ router = SimpleRouter()
 router.register("projects", views.ProjectViewSet, basename="project")
 router.register("join-requests", views.JoinRequestViewSet, basename="join-request")
 router.register("tasks", views.TaskViewSet, basename="task")
+router.register("invitations", views.InvitationViewSet, basename="invitation")
 
 urlpatterns = router.urls

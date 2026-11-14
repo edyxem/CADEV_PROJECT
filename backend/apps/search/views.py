@@ -11,6 +11,8 @@ from apps.community.filters import PostFilter
 from apps.community.serializers import PostListSerializer
 from apps.profiles.filters import ProfileFilter
 from apps.profiles.serializers import PublicProfileSerializer
+from apps.projects.filters import ProjectFilter
+from apps.projects.serializers import ProjectListSerializer
 from common.schema import errors
 
 from . import selectors
@@ -72,6 +74,22 @@ class UserSearchView(RankedSearchMixin, generics.ListAPIView):
         return selectors.search_profiles(self.request.query_params.get("q", ""))
 
 
+@extend_schema(
+    tags=TAG,
+    summary="Rechercher des projets",
+    description="Accès public. Projets publics non archivés ; mêmes filtres que la liste des "
+    "projets (`status`, `technology`, `category`, `recruiting`, `role`, `mode`).",
+    parameters=[Q_PARAM],
+    responses={200: ProjectListSerializer(many=True), **errors(429)},
+)
+class ProjectSearchView(RankedSearchMixin, generics.ListAPIView):
+    serializer_class = ProjectListSerializer
+    filterset_class = ProjectFilter
+
+    def get_queryset(self):
+        return selectors.search_projects(self.request.query_params.get("q", ""))
+
+
 class GlobalSearchView(SearchThrottleMixin, APIView):
     """Aperçu combiné : quelques résultats par type de ressource."""
 
@@ -88,6 +106,7 @@ class GlobalSearchView(SearchThrottleMixin, APIView):
                     "query": serializers.CharField(),
                     "posts": PostListSerializer(many=True),
                     "users": PublicProfileSerializer(many=True),
+                    "projects": ProjectListSerializer(many=True),
                 },
             ),
             **errors(429),
@@ -110,8 +129,9 @@ class GlobalSearchView(SearchThrottleMixin, APIView):
         )
 
     def extra_results(self, query: str, request: Request) -> dict:
-        """Point d'extension pour d'autres ressources recherchables (projets…)."""
-        return {}
+        projects = selectors.search_projects(query)[:PREVIEW_SIZE]
+        context = {"request": request}
+        return {"projects": ProjectListSerializer(projects, many=True, context=context).data}
 
     def extra_empty(self) -> dict:
-        return {}
+        return {"projects": []}

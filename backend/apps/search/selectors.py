@@ -20,6 +20,8 @@ from apps.community import selectors as community_selectors
 from apps.community.models import Post
 from apps.profiles import selectors as profile_selectors
 from apps.profiles.models import DeveloperProfile
+from apps.projects import selectors as project_selectors
+from apps.projects.models import Project
 from common.search import SEARCH_CONFIG
 
 MIN_QUERY_LENGTH = 2
@@ -78,6 +80,25 @@ def search_profiles(raw_query: str) -> QuerySet[DeveloperProfile]:
             | Q(display_name__unaccent__icontains=query)
             | Q(headline__unaccent__icontains=query)
             | Q(bio__unaccent__icontains=query)
+        )
+        .order_by("-similarity", "-created_at")
+    )
+
+
+def search_projects(raw_query: str) -> QuerySet[Project]:
+    """Projets publics non archivés par nom (similarité) ou description."""
+    queryset = project_selectors.public_projects()
+    query = normalize_query(raw_query)
+    if len(query) < MIN_QUERY_LENGTH:
+        return queryset.order_by("-created_at")
+    return (
+        queryset.annotate(similarity=TrigramWordSimilarity(query, "name"))
+        .filter(
+            Q(similarity__gte=WORD_SIMILARITY_THRESHOLD)
+            | Q(name__unaccent__icontains=query)
+            | Q(short_description__unaccent__icontains=query)
+            | Q(description__unaccent__icontains=query)
+            | Q(objectives__unaccent__icontains=query)
         )
         .order_by("-similarity", "-created_at")
     )

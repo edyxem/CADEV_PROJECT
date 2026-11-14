@@ -1,18 +1,14 @@
 """Règles métier des profils : compétences, liens, avatar."""
 
-import io
-import uuid
 from collections.abc import Iterable
 from typing import Any
 
-from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
-from PIL import Image, ImageOps
 
 from apps.accounts.models import User
 from common.exceptions import BusinessRuleViolation
-from common.validators import validate_image_upload
+from common.images import remove_image, replace_image
 
 from .models import DeveloperProfile, SocialLink, UserSkill
 
@@ -75,27 +71,9 @@ def add_social_link(user: User, **data: Any) -> SocialLink:
     return SocialLink.objects.create(user=user, **data)
 
 
-def _normalized_avatar(upload: UploadedFile) -> ContentFile:
-    """Réencode l'image : supprime les métadonnées et limite poids et dimensions."""
-    with Image.open(upload) as source:
-        image = ImageOps.exif_transpose(source).convert("RGB")
-    image.thumbnail(AVATAR_SIZE)
-    buffer = io.BytesIO()
-    image.save(buffer, format="WEBP", quality=85, method=4)
-    return ContentFile(buffer.getvalue(), name=f"{uuid.uuid4().hex}.webp")
-
-
 def update_avatar(profile: DeveloperProfile, upload: UploadedFile) -> DeveloperProfile:
-    validate_image_upload(upload)
-    previous = profile.avatar.name if profile.avatar else None
-    profile.avatar.save("avatar.webp", _normalized_avatar(upload), save=False)
-    profile.save(update_fields=["avatar", "updated_at"])
-    if previous:
-        profile.avatar.storage.delete(previous)
-    return profile
+    return replace_image(profile, "avatar", upload, max_size=AVATAR_SIZE)
 
 
 def remove_avatar(profile: DeveloperProfile) -> None:
-    if profile.avatar:
-        profile.avatar.delete(save=False)
-        profile.save(update_fields=["avatar", "updated_at"])
+    remove_image(profile, "avatar")

@@ -7,6 +7,8 @@ from apps.community import services
 from apps.community.models import ContentStatus, Post
 from apps.community.tests.factories import PostFactory, QuestionFactory
 from apps.profiles.models import DeveloperProfile, UserSkill
+from apps.projects.models import Project
+from apps.projects.tests.factories import make_project
 from common.throttling import ScopedWriteThrottle
 
 pytestmark = pytest.mark.django_db
@@ -129,11 +131,52 @@ class TestGlobalSearch:
         assert body["query"] == "django"
         assert len(body["posts"]) == 1
         assert body["users"][0]["username"] == "django_fan"
+        assert body["projects"] == []
 
     def test_short_query_returns_empty_sections(self, api_client):
         body = api_client.get(self.URL, {"q": " x "}).json()
 
-        assert body["posts"] == [] and body["users"] == []
+        assert body["posts"] == [] and body["users"] == [] and body["projects"] == []
+
+
+class TestProjectSearch:
+    URL = "/api/v1/search/projects/"
+
+    def test_finds_public_projects_by_name_and_description(self, api_client):
+        match = make_project(name="Application de télémédecine rurale", short_description="Santé")
+        by_text = make_project(
+            name="Outil communautaire", description="<p>Gestion de la télémédecine</p>"
+        )
+        make_project(name="Jeu éducatif")
+
+        found = [
+            item["slug"]
+            for item in api_client.get(self.URL, {"q": "telemedecine"}).json()["results"]
+        ]
+
+        assert set(found) == {match.slug, by_text.slug}
+
+    def test_private_and_archived_projects_are_excluded(self, api_client):
+        make_project(name="Projet secret santé", visibility=Project.Visibility.PRIVATE)
+        make_project(name="Projet santé archivé", status=Project.Status.ARCHIVED)
+
+        assert api_client.get(self.URL, {"q": "santé"}).json()["count"] == 0
+
+    def test_typo_tolerance_and_filters(self, api_client):
+        project = make_project(name="Cartographie des inondations")
+        make_project(name="Cartographie scolaire", accepts_join_requests=False)
+
+        assert [
+            p["slug"] for p in api_client.get(self.URL, {"q": "inondasions"}).json()["results"]
+        ] == [project.slug]
+        recruiting = api_client.get(self.URL, {"q": "cartographie", "recruiting": "true"}).json()
+        assert [p["slug"] for p in recruiting["results"]] == [project.slug]
+        assert api_client.get(self.URL).json()["count"] == 2
+
+    def test_global_search_includes_projects(self, api_client):
+        make_project(name="Plateforme agritech Django")
+
+        assert len(api_client.get("/api/v1/search/", {"q": "agritech"}).json()["projects"]) == 1
 
 
 def test_rebuild_search_index_command(capsys):

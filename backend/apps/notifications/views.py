@@ -31,6 +31,8 @@ class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = NotificationSerializer
 
     def get_queryset(self) -> QuerySet[Notification]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return Notification.objects.none()
         # Filtrer par destinataire rend les notifications d'autrui introuvables (404).
         queryset = Notification.objects.filter(recipient=self.request.user).select_related("actor")
         is_read = self.request.query_params.get("is_read")

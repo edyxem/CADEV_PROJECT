@@ -19,6 +19,7 @@ class Notification(BaseModel):
         JOIN_REQUEST_REJECTED = "JOIN_REQUEST_REJECTED", "Demande refusée"
         TASK_ASSIGNED = "TASK_ASSIGNED", "Tâche assignée"
         PROJECT_UPDATED = "PROJECT_UPDATED", "Modification importante d'un projet"
+        PROJECT_INVITATION = "PROJECT_INVITATION", "Invitation à rejoindre un projet"
         MODERATION_ACTION = "MODERATION_ACTION", "Décision de modération"
         NEW_FOLLOWER = "NEW_FOLLOWER", "Nouvel abonné"
         ACHIEVEMENT_AWARDED = "ACHIEVEMENT_AWARDED", "Nouveau badge"

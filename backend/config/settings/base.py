@@ -205,6 +205,18 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": r"/api/v1",
     "COMPONENT_SPLIT_REQUEST": True,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "ENUM_NAME_OVERRIDES": {
+        "ContentStatusEnum": "apps.community.models.ContentStatus",
+        "PostTypeEnum": "apps.community.models.Post.Type",
+        "ExperienceLevelEnum": "apps.profiles.models.ExperienceLevel",
+        "ProjectStatusEnum": "apps.projects.models.Project.Status",
+        "MemberStatusEnum": "apps.projects.models.ProjectMember.Status",
+        "JoinRequestStatusEnum": "apps.projects.models.JoinRequest.Status",
+        "TaskStatusEnum": "apps.projects.models.ProjectTask.Status",
+        "ReportStatusEnum": "apps.moderation.models.Report.Status",
+        "NotificationTypeEnum": "apps.notifications.models.Notification.Type",
+        "ModerationActionTypeEnum": "apps.moderation.models.ModerationAction.ActionType",
+    },
 }
 
 # Journalisation ------------------------------------------------------------

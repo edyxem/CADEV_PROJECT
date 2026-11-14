@@ -97,6 +97,8 @@ class PostViewSet(ActionThrottleMixin, viewsets.ModelViewSet):
     action_throttle_scopes = {"create": "content_create", "comments": "comment_create"}
 
     def get_queryset(self) -> QuerySet[Post]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return Post.all_objects.none()
         user = self.request.user
         if self.action == "list":
             ordering = self.request.query_params.get("ordering", "recent")

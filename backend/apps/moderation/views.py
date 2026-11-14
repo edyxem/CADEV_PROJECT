@@ -53,6 +53,8 @@ class ReportViewSet(ActionThrottleMixin, mixins.CreateModelMixin, viewsets.Gener
     action_throttle_scopes = {"create": "report_create"}
 
     def get_queryset(self) -> QuerySet[Report]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return Report.objects.none()
         return Report.objects.filter(reporter=self.request.user).order_by("-created_at")
 
     def create(self, request: Request, *args, **kwargs) -> Response:

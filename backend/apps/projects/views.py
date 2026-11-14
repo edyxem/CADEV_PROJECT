@@ -88,6 +88,8 @@ class ProjectViewSet(ActionThrottleMixin, viewsets.ModelViewSet):
     action_throttle_scopes = {"create": "content_create", "join_requests": "join_request"}
 
     def get_queryset(self) -> QuerySet[Project]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return Project.objects.none()
         if self.action == "list":
             return selectors.public_projects().order_by("-created_at")
         if self.action == "mine":
@@ -547,6 +549,8 @@ class TaskViewSet(
     http_method_names = ["get", "patch", "delete", "head", "options"]
 
     def get_queryset(self) -> QuerySet[ProjectTask]:
+        if getattr(self, "swagger_fake_view", False):  # génération du schéma OpenAPI
+            return ProjectTask.objects.none()
         # Seules les tâches des projets dont le lecteur est membre existent pour lui (IDOR → 404).
         queryset = ProjectTask.objects.select_related(
             "project", "assignee__profile", "created_by__profile"

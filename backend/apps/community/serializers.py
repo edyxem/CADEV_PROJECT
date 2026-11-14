@@ -11,6 +11,7 @@ from apps.catalog.serializers import (
     TagRefSerializer,
     TechnologyRefSerializer,
 )
+from apps.communities.models import Community
 from common.sanitization import to_plain_text
 
 from .models import Answer, Comment, ContentStatus, Post
@@ -55,6 +56,7 @@ class PostListSerializer(serializers.ModelSerializer):
     has_accepted_answer = serializers.BooleanField(read_only=True)
     has_voted = serializers.BooleanField(read_only=True)
     has_bookmarked = serializers.BooleanField(read_only=True)
+    community = serializers.SlugRelatedField(slug_field="slug", read_only=True)
 
     class Meta:
         model = Post
@@ -74,6 +76,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "has_accepted_answer",
             "has_voted",
             "has_bookmarked",
+            "community",
             "published_at",
             "last_activity_at",
             "created_at",
@@ -126,6 +129,13 @@ class PostWriteSerializer(serializers.ModelSerializer):
         required=False, allow_blank=True, max_length=Post.CONTENT_MAX_LENGTH, trim_whitespace=False
     )
     environment = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+    community = serializers.SlugRelatedField(
+        slug_field="slug",
+        queryset=Community.objects.filter(hidden_by_moderation=False),
+        required=False,
+        allow_null=True,
+        help_text="Slug d'une communauté dont l'auteur est membre (P2).",
+    )
 
     class Meta:
         model = Post
@@ -138,6 +148,7 @@ class PostWriteSerializer(serializers.ModelSerializer):
             "tags",
             "technologies",
             "status",
+            "community",
         ]
 
     def validate_title(self, value: str) -> str:

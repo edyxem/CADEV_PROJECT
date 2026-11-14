@@ -80,6 +80,15 @@ class Post(BaseModel):
     tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
     technologies = models.ManyToManyField(Technology, blank=True, related_name="posts")
     search_vector = SearchVectorField(null=True, editable=False)
+    community = models.ForeignKey(
+        "communities.Community",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posts",
+        help_text="Communauté de publication (P2), facultative.",
+    )
+    community_hidden = models.BooleanField("retirée du fil de la communauté", default=False)
 
     all_objects = AllManager()
     objects = VisibleManager()

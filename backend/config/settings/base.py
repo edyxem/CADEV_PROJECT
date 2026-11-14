@@ -46,6 +46,8 @@ LOCAL_APPS = [
     "apps.reputation",
     "apps.opportunities",
     "apps.mentorship",
+    "apps.communities",
+    "apps.events",
     "apps.search",
 ]
 
@@ -225,6 +227,9 @@ SPECTACULAR_SETTINGS = {
         "GlobalRoleEnum": "apps.accounts.models.User.Role",
         "OpportunityTypeEnum": "apps.opportunities.models.Opportunity.Type",
         "CollaborationModeEnum": "apps.projects.models.Project.CollaborationMode",
+        "CommunityRoleEnum": "apps.communities.models.CommunityMembership.Role",
+        "CommunityKindEnum": "apps.communities.models.Community.Kind",
+        "EventKindEnum": "apps.events.models.Event.Kind",
         "ProjectRoleEnum": "apps.projects.models.ProjectMember.Role",
         "AssignableProjectRoleEnum": "apps.projects.models.ASSIGNABLE_ROLE_CHOICES",
     },

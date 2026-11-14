@@ -74,7 +74,8 @@ class TestCreateReport:
         assert report(client, "POST", uuid.uuid4()).status_code == 404
         assert report(client, "POST", hidden.pk).status_code == 404
         assert report(client, "PROJECT", private.pk).status_code == 404
-        assert report(client, "MESSAGE", uuid.uuid4()).status_code == 400
+        assert report(client, "MESSAGE", uuid.uuid4()).status_code == 404
+        assert report(client, "NOPE", uuid.uuid4()).status_code == 400
 
     def test_reporting_is_rate_limited(self, client_for, user, monkeypatch):
         monkeypatch.setitem(ScopedWriteThrottle.THROTTLE_RATES, "report_create", "1/hour")

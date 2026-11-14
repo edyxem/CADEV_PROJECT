@@ -10,7 +10,19 @@ from apps.catalog.serializers import CategoryRefSerializer, TechnologyRefSeriali
 from apps.community.serializers import AuthorSerializer
 
 from . import policies
-from .models import JoinRequest, Project, ProjectMember, ProjectRoleNeed, ProjectTask
+from .models import (
+    ASSIGNABLE_ROLE_CHOICES,
+    JoinRequest,
+    Milestone,
+    Project,
+    ProjectActivity,
+    ProjectInvitation,
+    ProjectMember,
+    ProjectRoleNeed,
+    ProjectTask,
+    ProjectUpdate,
+    TaskComment,
+)
 
 
 class RoleNeedSerializer(serializers.ModelSerializer):
@@ -197,9 +209,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class MemberUpdateSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(
-        choices=[
-            (r, label) for r, label in ProjectMember.Role.choices if r != ProjectMember.Role.OWNER
-        ],
+        choices=ASSIGNABLE_ROLE_CHOICES,
         required=False,
     )
 
@@ -245,11 +255,7 @@ class JoinRequestCreateSerializer(serializers.Serializer):
 
 class JoinRequestDecisionSerializer(serializers.Serializer):
     role = serializers.ChoiceField(
-        choices=[
-            ProjectMember.Role.CONTRIBUTOR,
-            ProjectMember.Role.OBSERVER,
-            ProjectMember.Role.MANAGER,
-        ],
+        choices=ASSIGNABLE_ROLE_CHOICES,
         default=ProjectMember.Role.CONTRIBUTOR,
         help_text="Rôle attribué à l'acceptation (MANAGER : propriétaire uniquement).",
     )
@@ -280,6 +286,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "priority",
             "due_date",
             "completed_at",
+            "milestone",
             "can_edit",
             "created_at",
             "updated_at",
@@ -302,7 +309,8 @@ class TaskWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectTask
-        fields = ["title", "description", "assignee", "status", "priority", "due_date"]
+        fields = ["title", "description", "assignee", "status", "priority", "due_date", "milestone"]
+        extra_kwargs = {"milestone": {"required": False, "allow_null": True}}
 
     def validate_title(self, value: str) -> str:
         if len(value.strip()) < 3:
@@ -314,3 +322,98 @@ class ProjectRefSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "slug", "name", "status"]
+
+
+class MilestoneSerializer(serializers.ModelSerializer):
+    task_count = serializers.SerializerMethodField()
+    done_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Milestone
+        fields = [
+            "id",
+            "title",
+            "description",
+            "due_date",
+            "status",
+            "completed_at",
+            "task_count",
+            "done_count",
+            "created_at",
+        ]
+        read_only_fields = ["id", "completed_at", "task_count", "done_count", "created_at"]
+
+    def get_task_count(self, milestone: Milestone) -> int:
+        return milestone.tasks.count()
+
+    def get_done_count(self, milestone: Milestone) -> int:
+        return milestone.tasks.filter(status=ProjectTask.Status.DONE).count()
+
+
+class TaskCommentSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+
+    class Meta:
+        model = TaskComment
+        fields = ["id", "author", "content", "created_at"]
+        read_only_fields = ["id", "author", "created_at"]
+
+
+class ProjectUpdateSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+
+    class Meta:
+        model = ProjectUpdate
+        fields = ["id", "title", "content", "author", "created_at"]
+        read_only_fields = ["id", "author", "created_at"]
+
+
+class ActivitySerializer(serializers.ModelSerializer):
+    actor = AuthorSerializer(read_only=True, allow_null=True)
+    verb_label = serializers.CharField(source="get_verb_display", read_only=True)
+
+    class Meta:
+        model = ProjectActivity
+        fields = [
+            "id",
+            "actor",
+            "verb",
+            "verb_label",
+            "target_type",
+            "target_id",
+            "metadata",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class InvitationSerializer(serializers.ModelSerializer):
+    invitee = AuthorSerializer(read_only=True)
+    invited_by = AuthorSerializer(read_only=True)
+    project = ProjectRefSerializer(read_only=True)
+
+    class Meta:
+        model = ProjectInvitation
+        fields = [
+            "id",
+            "project",
+            "invitee",
+            "invited_by",
+            "role",
+            "message",
+            "status",
+            "responded_at",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class InvitationCreateSerializer(serializers.Serializer):
+    username = serializers.SlugRelatedField(
+        slug_field="username", queryset=User.objects.filter(is_active=True)
+    )
+    role = serializers.ChoiceField(
+        choices=ASSIGNABLE_ROLE_CHOICES,
+        default=ProjectMember.Role.CONTRIBUTOR,
+    )
+    message = serializers.CharField(required=False, allow_blank=True, max_length=500)

@@ -304,6 +304,9 @@ class ProjectTask(BaseModel):
     priority = models.CharField(max_length=8, choices=Priority.choices, default=Priority.MEDIUM)
     due_date = models.DateField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    milestone = models.ForeignKey(
+        "Milestone", on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks"
+    )
 
     class Meta:
         verbose_name = "tâche"
@@ -344,3 +347,152 @@ TASK_TRANSITIONS: dict[str, set[str]] = {
     ProjectTask.Status.BLOCKED: {ProjectTask.Status.TODO, ProjectTask.Status.IN_PROGRESS},
     ProjectTask.Status.DONE: {ProjectTask.Status.IN_PROGRESS},
 }
+
+
+# --- Suivi avancé (P1) -------------------------------------------------------------
+
+
+class Milestone(BaseModel):
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "En cours"
+        COMPLETED = "COMPLETED", "Atteint"
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="milestones")
+    title = models.CharField(max_length=160)
+    description = models.TextField(blank=True, max_length=2000)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "jalon"
+        verbose_name_plural = "jalons"
+        ordering = ["due_date", "created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(status="COMPLETED") | Q(completed_at__isnull=False),
+                name="milestone_completed_has_date",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class TaskComment(BaseModel):
+    task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="task_comments"
+    )
+    content = models.TextField(max_length=3000)
+
+    class Meta:
+        verbose_name = "commentaire de tâche"
+        verbose_name_plural = "commentaires de tâche"
+        ordering = ["created_at"]
+
+
+class ProjectUpdate(BaseModel):
+    """Annonce d'avancement publiée par l'équipe, visible avec le projet."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="updates")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="project_updates"
+    )
+    title = models.CharField(max_length=160)
+    content = models.TextField()
+
+    class Meta:
+        verbose_name = "mise à jour de projet"
+        verbose_name_plural = "mises à jour de projet"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class ProjectActivity(BaseModel):
+    """Fil d'activité et historique des changements d'un projet (en ajout seul)."""
+
+    class Verb(models.TextChoices):
+        PROJECT_CREATED = "PROJECT_CREATED", "Projet créé"
+        STATUS_CHANGED = "STATUS_CHANGED", "Statut modifié"
+        MEMBER_JOINED = "MEMBER_JOINED", "Nouveau membre"
+        MEMBER_LEFT = "MEMBER_LEFT", "Départ d'un membre"
+        MEMBER_REMOVED = "MEMBER_REMOVED", "Membre retiré"
+        ROLE_CHANGED = "ROLE_CHANGED", "Rôle modifié"
+        OWNERSHIP_TRANSFERRED = "OWNERSHIP_TRANSFERRED", "Propriété transférée"
+        TASK_CREATED = "TASK_CREATED", "Tâche créée"
+        TASK_UPDATED = "TASK_UPDATED", "Tâche modifiée"
+        TASK_DELETED = "TASK_DELETED", "Tâche supprimée"
+        MILESTONE_CREATED = "MILESTONE_CREATED", "Jalon créé"
+        MILESTONE_COMPLETED = "MILESTONE_COMPLETED", "Jalon atteint"
+        UPDATE_PUBLISHED = "UPDATE_PUBLISHED", "Mise à jour publiée"
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="activities")
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    verb = models.CharField(max_length=24, choices=Verb.choices)
+    target_type = models.CharField(max_length=32, blank=True)
+    target_id = models.UUIDField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = "activité de projet"
+        verbose_name_plural = "activités de projet"
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["project", "-created_at"], name="project_activity_idx")]
+
+
+class ProjectInvitation(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "En attente"
+        ACCEPTED = "ACCEPTED", "Acceptée"
+        DECLINED = "DECLINED", "Déclinée"
+        CANCELLED = "CANCELLED", "Annulée"
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="invitations")
+    invitee = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="project_invitations"
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+    )
+    role = models.CharField(
+        max_length=16, choices=ProjectMember.Role.choices, default=ProjectMember.Role.CONTRIBUTOR
+    )
+    message = models.CharField(max_length=500, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "invitation"
+        verbose_name_plural = "invitations"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "invitee"],
+                condition=Q(status="PENDING"),
+                name="invitation_one_pending",
+            ),
+            models.CheckConstraint(condition=~Q(role="OWNER"), name="invitation_not_owner"),
+        ]
+
+
+INVITATION_TRANSITIONS: dict[str, set[str]] = {
+    ProjectInvitation.Status.PENDING: {
+        ProjectInvitation.Status.ACCEPTED,
+        ProjectInvitation.Status.DECLINED,
+        ProjectInvitation.Status.CANCELLED,
+    },
+    ProjectInvitation.Status.ACCEPTED: set(),
+    ProjectInvitation.Status.DECLINED: set(),
+    ProjectInvitation.Status.CANCELLED: set(),
+}
+
+
+# Rôles attribuables par acceptation, invitation ou modification (jamais OWNER).
+ASSIGNABLE_ROLE_CHOICES = [
+    (role, label) for role, label in ProjectMember.Role.choices if role != ProjectMember.Role.OWNER
+]

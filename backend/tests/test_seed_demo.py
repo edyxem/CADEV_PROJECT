@@ -59,6 +59,23 @@ def test_seed_is_idempotent_and_fictional(seeded):
     assert Report.objects.filter(status="PENDING").count() == len(demo_data.REPORTS)
 
 
+def test_seed_covers_p2_modules(seeded):
+    from apps.communities.models import Community
+    from apps.events.models import Event
+    from apps.mentorship.models import MentorProfile
+    from apps.messaging.models import Conversation
+    from apps.opportunities.models import Opportunity
+
+    call_command("seed_demo")
+
+    assert Opportunity.objects.filter(status="PUBLISHED").count() == 2
+    assert Opportunity.objects.filter(status="PENDING_REVIEW").count() == 1
+    assert MentorProfile.objects.count() == len(demo_data.MENTORS)
+    assert Community.objects.count() == len(demo_data.COMMUNITIES)
+    assert Event.objects.count() == len(demo_data.EVENTS)
+    assert Conversation.objects.count() == len(demo_data.CONVERSATIONS)
+
+
 def test_jury_scenario_section_17(seeded):
     awa = signed_in("awa_diop")
 

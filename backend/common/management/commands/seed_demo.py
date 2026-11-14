@@ -4,6 +4,8 @@ Les contenus sont créés via les services métier (assainissement, index de
 recherche, notifications, règles de projet) pour refléter le comportement réel.
 """
 
+from datetime import timedelta
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -38,6 +40,7 @@ class Command(BaseCommand):
         self._projects(users)
         self._reports(users, posts)
         self._recommendations(users)
+        self._p2(users)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Démo prête : {len(users)} membres, {len(posts)} publications, "
@@ -263,3 +266,126 @@ class Command(BaseCommand):
                     recommender=users[recommender], recommended=users[recommended], context=context
                 )
         sync_users(users.values())
+
+    # --- P2 ---------------------------------------------------------------------------
+
+    def _p2(self, users: dict[str, User]) -> None:
+        from django.utils import timezone
+
+        from apps.communities import services as communities
+        from apps.communities.models import Community, CommunityMembership
+        from apps.events import services as events
+        from apps.events.models import Event
+        from apps.mentorship import services as mentorship
+        from apps.mentorship.models import MentorProfile, MentorshipRequest
+        from apps.messaging import services as messaging
+        from apps.messaging.models import Conversation
+        from apps.opportunities import services as opportunities
+        from apps.opportunities.models import Opportunity, Organization
+
+        organizations = {}
+        for name, website, member, verified in data.ORGANIZATIONS:
+            organization = Organization.objects.filter(name=name).first()
+            if organization is None:
+                organization = opportunities.create_organization(
+                    creator=users[member], data={"name": name, "website": website}
+                )
+                if verified:
+                    opportunities.verify_organization(
+                        organization=organization, actor=users["demo_admin"], verified=True
+                    )
+            organizations[name] = organization
+
+        for publisher, org_name, free_name, kind, title, mode, days, submit in data.OPPORTUNITIES:
+            if Opportunity.objects.filter(title=title).exists():
+                continue
+            opportunities.create_opportunity(
+                publisher=users[publisher],
+                data={
+                    "type": kind,
+                    "title": title,
+                    "description": f"<p>{data.FICTIONAL_NOTICE} Annonce de démonstration.</p>",
+                    "organization": organizations.get(org_name),
+                    "organization_name": free_name,
+                    "work_mode": mode,
+                    "deadline": timezone.localdate() + timedelta(days=days),
+                    "source_url": "https://example.org/annonce-fictive",
+                },
+                submit=submit,
+            )
+
+        categories = {category.slug: category for category in Category.objects.all()}
+        for username, headline, domains, languages in data.MENTORS:
+            if not MentorProfile.objects.filter(user=users[username]).exists():
+                mentorship.save_mentor_profile(
+                    user=users[username],
+                    data={
+                        "headline": headline,
+                        "languages": languages,
+                        "domains": [categories[slug] for slug in domains if slug in categories],
+                    },
+                )
+        for mentee, mentor, goal, accept in data.MENTORSHIPS:
+            profile = MentorProfile.objects.get(user=users[mentor])
+            if MentorshipRequest.objects.filter(mentee=users[mentee], mentor=profile).exists():
+                continue
+            request = mentorship.request_mentorship(mentee=users[mentee], mentor=profile, goal=goal)
+            if accept:
+                request = mentorship.respond(
+                    request=request, mentor_user=users[mentor], accept=True
+                )
+                mentorship.plan_session(
+                    request=request,
+                    actor=users[mentor],
+                    data={
+                        "scheduled_at": timezone.now() + timedelta(days=5),
+                        "agenda": "Premier échange",
+                    },
+                )
+
+        countries = {country.code: country for country in Country.objects.all()}
+        for leader, name, kind, description, country, city, members in data.COMMUNITIES:
+            community = Community.objects.filter(name=name).first()
+            if community is None:
+                community = communities.create_community(
+                    creator=users[leader],
+                    data={
+                        "name": name,
+                        "kind": kind,
+                        "description": description,
+                        "country": countries.get(country),
+                        "city": city,
+                    },
+                )
+            for member in members:
+                if not CommunityMembership.objects.filter(
+                    community=community, user=users[member]
+                ).exists():
+                    communities.join(community=community, user=users[member])
+
+        for organizer, community_name, title, kind, fmt, days, attendees in data.EVENTS:
+            if Event.objects.filter(title=title).exists():
+                continue
+            start = timezone.now() + timedelta(days=days)
+            event = events.create_event(
+                organizer=users[organizer],
+                data={
+                    "title": title,
+                    "description": f"<p>{data.FICTIONAL_NOTICE} Événement de démonstration.</p>",
+                    "kind": kind,
+                    "format": fmt,
+                    "starts_at": start,
+                    "ends_at": start + timedelta(hours=2),
+                    "online_url": "https://meet.example.org/demo-afridev",
+                    "community": Community.objects.get(name=community_name),
+                },
+            )
+            for attendee in attendees:
+                events.register(event=event, user=users[attendee])
+
+        for sender, recipient, content in data.CONVERSATIONS:
+            key = ":".join(sorted([str(users[sender].pk), str(users[recipient].pk)]))
+            if not Conversation.objects.filter(participants_key=key).exists():
+                messaging.start_conversation(
+                    sender=users[sender], recipient=users[recipient], content=content
+                )

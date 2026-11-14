@@ -44,6 +44,8 @@ LOCAL_APPS = [
     "apps.moderation",
     "apps.social",
     "apps.reputation",
+    "apps.opportunities",
+    "apps.mentorship",
     "apps.search",
 ]
 
@@ -221,6 +223,8 @@ SPECTACULAR_SETTINGS = {
         "ReportTargetTypeEnum": "apps.moderation.models.TargetType",
         "FollowTargetTypeEnum": "apps.social.models.Follow.TargetType",
         "GlobalRoleEnum": "apps.accounts.models.User.Role",
+        "OpportunityTypeEnum": "apps.opportunities.models.Opportunity.Type",
+        "CollaborationModeEnum": "apps.projects.models.Project.CollaborationMode",
         "ProjectRoleEnum": "apps.projects.models.ProjectMember.Role",
         "AssignableProjectRoleEnum": "apps.projects.models.ASSIGNABLE_ROLE_CHOICES",
     },

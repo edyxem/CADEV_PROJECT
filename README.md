@@ -40,7 +40,9 @@ backend/
 │   ├── community/     # publications, commentaires, réponses, votes
 │   ├── search/        # recherche PostgreSQL (fr sans accents + trigrammes)
 │   ├── projects/      # projets, équipe, rôles recherchés, demandes, tâches
-│   ├── notifications/ # notifications internes
+│   ├── notifications/ # notifications internes et préférences
+│   ├── social/        # abonnements et fil personnalisé
+│   ├── reputation/    # contributions, badges, recommandations, tableau de bord
 │   └── moderation/    # signalements, actions, journal d'audit
 └── tests/             # scénarios de bout en bout
 docs/                  # cahier des charges, ADR, guide API, modération
@@ -135,7 +137,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ## Qualité
 
-- 369 tests, couverture **96,8 %** (`apps/` + `common/`, seuil CI : 85 %).
+- 422 tests, couverture **> 95 %** (`apps/` + `common/`, seuil CI : 85 %).
 - Permissions testées par rôle (anonyme, membre, auteur, autre membre, rôles projet,
   modérateur, administrateur), IDOR, non-fuite des champs privés, transitions interdites,
   limites de débit.
@@ -165,11 +167,30 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 | P0-13 | Administration minimale | Fait | Django Admin + `moderation` |
 | P0-14 | Interface responsive | Hors périmètre backend | frontend |
 
-Également livrés dès le P0 : réponses acceptées, notifications internes, profils privés.
 
-### P1 et P2
+### P1 — Fonctions importantes
 
-Non commencés à ce stade (voir la feuille de route).
+| Fonction | Statut | Où |
+|---|---|---|
+| Profils enrichis (projets, contributions, disponibilité détaillée) | Fait | `profiles`, `reputation` |
+| Filtres avancés de découverte de développeurs | Fait | `profiles`, `search` |
+| Articles / tutoriels avec mise en forme | Fait (HTML assaini) | `community` |
+| Réponses acceptées | Fait | `community` |
+| Favoris | Fait | `community` |
+| Abonnements (membres, technologies, catégories) et fil personnalisé | Fait | `social` |
+| Notifications internes | Fait | `notifications` |
+| Tâches avancées : échéances, jalons, commentaires, Kanban | Fait | `projects` |
+| Mises à jour de projet et fil d'activité / historique | Fait | `projects` |
+| Invitations directes et gestion avancée des rôles | Fait | `projects` |
+| Pièces jointes de projet | Non fait | — |
+| Badges et réputation fondés sur des actions réelles | Fait | `reputation` ([règles](docs/reputation.md)) |
+| Tableau de bord utilisateur | Fait | `GET /me/dashboard/` |
+| Profil privé / public et paramètres de notification | Fait | `profiles`, `notifications` |
+| Interface anglaise préparée | Partiel : `LocaleMiddleware` et `LANGUAGES` en place, messages encore en français uniquement | `config` |
+
+### P2 — Extensions
+
+Non commencées à ce stade.
 
 ## Limites connues
 
@@ -183,8 +204,7 @@ Non commencés à ce stade (voir la feuille de route).
 
 ## Feuille de route
 
-- **P1** : favoris, abonnements et fil personnalisé, réputation et badges, jalons, mises à jour
-  et fil d'activité de projet, tableau de bord, préférences de notification.
+- **P1** : traduction anglaise des messages, pièces jointes de projet.
 - **P2** : opportunités, mentorat, communautés, événements, messagerie privée,
   recommandations.
 - **P3 (hors périmètre)** : OAuth GitHub, analyse de contributions, assistant IA, temps réel,

@@ -217,6 +217,8 @@ SPECTACULAR_SETTINGS = {
         "ReportStatusEnum": "apps.moderation.models.Report.Status",
         "NotificationTypeEnum": "apps.notifications.models.Notification.Type",
         "ModerationActionTypeEnum": "apps.moderation.models.ModerationAction.ActionType",
+        "ReportTargetTypeEnum": "apps.moderation.models.TargetType",
+        "FollowTargetTypeEnum": "apps.social.models.Follow.TargetType",
     },
 }
 

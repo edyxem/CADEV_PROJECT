@@ -1,16 +1,17 @@
-"""Administration des contenus (lecture ; la modération passe par ``moderation``)."""
+"""Administration des contenus : consultation, masquage et restauration journalisés."""
 
 from django.contrib import admin
 from django.db.models import QuerySet
 from django.http import HttpRequest
 
-from .models import Answer, Comment, Post
+from .models import Answer, Comment, ContentStatus, Post
 
 
 class ContentAdmin(admin.ModelAdmin):
     list_filter = ["status", "created_at"]
     list_select_related = ["author"]
     readonly_fields = ["created_at", "updated_at"]
+    actions = ["hide_selection", "restore_selection"]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         return self.model.all_objects.all()
@@ -18,6 +19,20 @@ class ContentAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request: HttpRequest, obj=None) -> bool:
         # Les contenus ne sont jamais effacés physiquement depuis l'admin.
         return False
+
+    def _moderate(self, request: HttpRequest, queryset: QuerySet, target: str) -> None:
+        from apps.moderation.services import moderate_from_admin
+
+        done = sum(moderate_from_admin(obj, target=target, actor=request.user) for obj in queryset)
+        self.message_user(request, f"{done} contenu(s) mis à jour et journalisé(s).")
+
+    @admin.action(description="Masquer (modération, journalisé)")
+    def hide_selection(self, request: HttpRequest, queryset: QuerySet) -> None:
+        self._moderate(request, queryset, ContentStatus.HIDDEN)
+
+    @admin.action(description="Restaurer (journalisé)")
+    def restore_selection(self, request: HttpRequest, queryset: QuerySet) -> None:
+        self._moderate(request, queryset, ContentStatus.PUBLISHED)
 
 
 @admin.register(Post)

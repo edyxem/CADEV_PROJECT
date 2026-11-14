@@ -2,12 +2,13 @@
 
 from typing import Any
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Model
 from django.utils import timezone
 
 from apps.accounts.models import User
 
-from .models import Notification
+from .models import MANDATORY_TYPES, Notification
 
 
 def notify(
@@ -47,8 +48,13 @@ def notify(
 
 
 def _wants(recipient: User, notification_type: str) -> bool:
-    """Respecte les préférences du membre lorsqu'elles existent."""
-    preferences: Any = getattr(recipient, "notification_preferences", None)
+    """Respecte les préférences du membre, sauf pour les notifications obligatoires."""
+    if notification_type in MANDATORY_TYPES:
+        return True
+    try:
+        preferences: Any = recipient.notification_preferences
+    except ObjectDoesNotExist:
+        return True
     if preferences is None:
         return True
     return notification_type not in (preferences.muted_types or [])
@@ -66,3 +72,10 @@ def mark_all_read(recipient: User) -> int:
     return Notification.objects.filter(recipient=recipient, is_read=False).update(
         is_read=True, read_at=timezone.now()
     )
+
+
+def get_preferences(user: User):
+    from .models import NotificationPreference
+
+    preferences, _ = NotificationPreference.objects.get_or_create(user=user)
+    return preferences

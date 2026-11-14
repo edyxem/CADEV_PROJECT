@@ -697,3 +697,131 @@ RECOMMENDATIONS = [
         "Awa a revu l'architecture de notre API et amélioré les performances.",
     ),
 ]
+
+# --- P2 ----------------------------------------------------------------------------
+
+# (nom, site, membre, vérifiée ?)
+ORGANIZATIONS = [
+    (
+        "Fondation Code Afrique (fictive)",
+        "https://fondation-code-afrique.example.org",
+        "chinedu_okafor",
+        True,
+    ),
+]
+
+# (publieur, organisation ou None, nom libre, type, titre, mode, jours avant la date limite, soumettre ?)
+OPPORTUNITIES = [
+    (
+        "chinedu_okafor",
+        "Fondation Code Afrique (fictive)",
+        "",
+        "SCHOLARSHIP",
+        "Bourse de formation cloud pour développeuses (fictive)",
+        "REMOTE",
+        30,
+        True,
+    ),
+    (
+        "chinedu_okafor",
+        "Fondation Code Afrique (fictive)",
+        "",
+        "HACKATHON",
+        "Hackathon santé numérique 2026 (fictif)",
+        "HYBRID",
+        15,
+        True,
+    ),
+    (
+        "yao_kouassi",
+        None,
+        "Agence Web Abidjan (fictive)",
+        "INTERNSHIP",
+        "Stage développeur Laravel à Abidjan (fictif)",
+        "ONSITE",
+        20,
+        True,
+    ),
+]
+
+# (mentor, titre, domaines, langues)
+MENTORS = [
+    (
+        "moussa_traore",
+        "Réseaux et cybersécurité : du campus à l'entreprise",
+        ["reseaux-et-telecommunications", "cybersecurite"],
+        ["fr"],
+    ),
+    (
+        "kwame_asante",
+        "Architecture backend et performance des API",
+        ["backend-et-api"],
+        ["en", "fr"],
+    ),
+    ("chinedu_okafor", "Carrière DevOps et cloud", ["cloud-et-devops"], ["en"]),
+]
+
+# (mentoré, mentor, objectif, accepter ?)
+MENTORSHIPS = [
+    (
+        "fatou_ndiaye",
+        "kwame_asante",
+        "Comprendre comment structurer une API REST propre pour mon projet de fin d'études.",
+        True,
+    ),
+    (
+        "ibrahim_diallo",
+        "moussa_traore",
+        "Préparer une certification réseau et découvrir les métiers de la cybersécurité.",
+        False,
+    ),
+]
+
+# (responsable, nom, type, description, pays, ville, membres)
+COMMUNITIES = [
+    (
+        "awa_diop",
+        "Développeurs de Dakar",
+        "CITY",
+        "Rencontres, entraide et projets entre développeurs de Dakar.",
+        "SN",
+        "Dakar",
+        ["fatou_ndiaye", "kofi_mensah"],
+    ),
+    (
+        "moussa_traore",
+        "Cybersécurité Afrique de l'Ouest",
+        "DOMAIN",
+        "Veille, retours d'expérience et bonnes pratiques de sécurité.",
+        "",
+        "",
+        ["mariam_sow", "ibrahim_diallo"],
+    ),
+]
+
+# (organisateur, communauté, titre, type, format, jours, inscrits)
+EVENTS = [
+    (
+        "awa_diop",
+        "Développeurs de Dakar",
+        "Atelier en ligne : une API Django en une soirée",
+        "WORKSHOP",
+        "ONLINE",
+        7,
+        ["fatou_ndiaye", "kofi_mensah"],
+    ),
+    (
+        "moussa_traore",
+        "Cybersécurité Afrique de l'Ouest",
+        "Webinaire : sécuriser un réseau de campus",
+        "WEBINAR",
+        "ONLINE",
+        12,
+        ["mariam_sow"],
+    ),
+]
+
+# (expéditeur, destinataire, message)
+CONVERSATIONS = [
+    ("kofi_mensah", "awa_diop", "Salut Awa, je regarde l'API d'AgriMarché ce week-end !"),
+]

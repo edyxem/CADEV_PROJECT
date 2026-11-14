@@ -43,6 +43,11 @@ backend/
 │   ├── notifications/ # notifications internes et préférences
 │   ├── social/        # abonnements et fil personnalisé
 │   ├── reputation/    # contributions, badges, recommandations, tableau de bord
+│   ├── opportunities/ # opportunités, organisations vérifiées (P2)
+│   ├── mentorship/    # mentors, demandes, sessions, retours (P2)
+│   ├── communities/   # communautés thématiques et géographiques (P2)
+│   ├── events/        # agenda, inscriptions, rappels (P2)
+│   ├── messaging/     # messagerie privée, blocage (P2)
 │   └── moderation/    # signalements, actions, journal d'audit
 └── tests/             # scénarios de bout en bout
 docs/                  # cahier des charges, ADR, guide API, modération
@@ -50,7 +55,7 @@ docker/                # Dockerfile, entrypoint
 ```
 
 Décisions structurantes : [docs/adr/](docs/adr) (authentification, UUID, votes, suppression
-logique, recherche).
+logique, recherche, extensions P2).
 
 ## Démarrage rapide (Docker)
 
@@ -97,6 +102,8 @@ pre-commit install
 | `make lint` | ruff (lint + format) et contrôle des migrations |
 | `make check` | `check --deploy` avec les settings de production |
 | `python backend/manage.py rebuild_search_index` | reconstruit l'index de recherche |
+| `python backend/manage.py recompute_reputation` | recalcule réputations et badges |
+| `python backend/manage.py send_event_reminders` | rappels d'événements (à planifier via cron) |
 
 ## Variables d'environnement
 
@@ -127,7 +134,10 @@ Tous fictifs, mot de passe commun **`Demo-AfriDev-2026`** (démonstration unique
 | `kofi_mensah` | membre | développeur React, membre d'AgriMarché |
 | `moussa_traore` | membre | propriétaire de CampusSecure (demandes en attente) |
 | `yao_kouassi` | membre | candidat idéal pour rejoindre CampusSecure pendant la démo |
-| 16 autres membres | membre | annuaire varié (12 pays, mobile, data, cloud, sécurité…) |
+| `chinedu_okafor` | membre | organisation vérifiée, opportunités publiées, mentor |
+| `kwame_asante` | membre | mentor ayant accepté un mentorat (session planifiée) |
+| `fatou_ndiaye` | membre | mentorée, membre de la communauté « Développeurs de Dakar », inscrite à un atelier |
+| 13 autres membres | membre | annuaire varié (14 pays, mobile, data, cloud, sécurité…) |
 
 Scénario jury (§17) rejouable intégralement via Swagger : connexion `awa_diop` → profil →
 question « N+1 » et réponses → `GET /search/users/?technology=react` → connexion
@@ -137,7 +147,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ## Qualité
 
-- 422 tests, couverture **> 95 %** (`apps/` + `common/`, seuil CI : 85 %).
+- 489 tests, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
 - Permissions testées par rôle (anonyme, membre, auteur, autre membre, rôles projet,
   modérateur, administrateur), IDOR, non-fuite des champs privés, transitions interdites,
   limites de débit.
@@ -190,7 +200,20 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ### P2 — Extensions
 
-Non commencées à ce stade.
+| Fonction | Statut | Où |
+|---|---|---|
+| Annuaire d'opportunités (emplois, stages, freelance, bourses, hackathons…) | Fait | `opportunities` |
+| Candidatures / demandes d'information | Fait (sans recrutement de bout en bout) | `opportunities` |
+| Pages d'organisation et partenaires vérifiés | Fait (vérification par un admin) | `opportunities` |
+| Mentorat : profils, demandes, sessions, retours | Fait | `mentorship` |
+| Communautés par pays, ville, université, technologie, domaine | Fait | `communities` |
+| Événements, agenda, inscriptions, rappels | Fait (rappels par commande planifiable) | `events` |
+| Messagerie privée, blocage, signalement | Fait (sans temps réel) | `messaging` |
+| Recommandations de développeurs et de projets | Fait (recouvrement de technologies, explicable) | `social` |
+| Portfolio enrichi de réalisations | Fait | `profiles` |
+| Notifications par e-mail | Fait (types choisis, adresse vérifiée, SMTP à configurer) | `notifications` |
+
+Choix et limites : [ADR 0006](docs/adr/0006-extensions-p2.md).
 
 ## Limites connues
 
@@ -201,12 +224,19 @@ Non commencées à ce stade.
   d'un jeton sans état) ; un compte désactivé est rejeté immédiatement.
 - Les médias sont servis par Django en démonstration (`DJANGO_SERVE_MEDIA`) ; utiliser un
   stockage objet ou un serveur web en production.
+- Les messages d'erreur de l'API sont en français uniquement ; l'infrastructure i18n est en
+  place mais les traductions ne sont pas faites.
+- Pas de temps réel : notifications et messagerie se rafraîchissent par interrogation.
+- Les rappels d'événements nécessitent de planifier `send_event_reminders` (cron) ;
+  aucun ordonnanceur n'est fourni dans `docker-compose.yml`.
+- La réputation est recalculée après chaque transaction concernée ; à forte charge, un
+  recalcul différé (file de tâches) serait préférable.
+- La CI GitHub Actions a été reproduite localement (lint, migrations, `check --deploy`,
+  schéma, tests, image) ; son exécution sur GitHub est à confirmer au premier push.
 
 ## Feuille de route
 
-- **P1** : traduction anglaise des messages, pièces jointes de projet.
-- **P2** : opportunités, mentorat, communautés, événements, messagerie privée,
-  recommandations.
+- **Reste à faire (P1)** : traduction anglaise des messages, pièces jointes de projet.
 - **P3 (hors périmètre)** : OAuth GitHub, analyse de contributions, assistant IA, temps réel,
   application mobile, PWA hors ligne, traduction assistée, validation de compétences par
   tests, intégrations externes, statistiques avancées.
@@ -215,4 +245,5 @@ Non commencées à ce stade.
 
 - [Guide d'intégration frontend](docs/api.md)
 - [Modération](docs/moderation.md)
+- [Réputation et badges](docs/reputation.md)
 - [Décisions d'architecture](docs/adr)

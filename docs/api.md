@@ -174,3 +174,26 @@ frontend relatif (ex. `/publications/<id>`, `/projets/<slug>`).
 | Demande pour rejoindre | 20 / h |
 | Recherche | 60 / min |
 | Global (anonyme / connecté) | 120 / 300 par min |
+
+## 6. Fonctions P1 et P2
+
+| Domaine | Endpoints principaux |
+|---|---|
+| Favoris | `POST|DELETE /posts/{id}/bookmark/`, `GET /posts/bookmarks/` |
+| Abonnements | `GET|POST /follows/` `{target_type: USER|TECHNOLOGY|CATEGORY, target}`, `DELETE /follows/{id}/`, `GET /follows/followers/`, `GET /profiles/{username}/follow-stats/` |
+| Fil personnalisé | `GET /feed/` (le fil général `/posts/` reste disponible) |
+| Préférences | `GET|PATCH /notifications/preferences/` `{muted_types, email_types}` |
+| Réputation | `GET /profiles/{username}/reputation/`, `GET /achievements/`, `GET|POST /profiles/{username}/recommendations/` — voir [reputation.md](reputation.md) |
+| Tableau de bord | `GET /me/dashboard/` |
+| Suivi de projet | `…/projects/{slug}/milestones/`, `…/updates/`, `…/activity/`, `…/board/`, `…/invitations/`, `GET|POST /tasks/{id}/comments/`, `/invitations/{id}/accept|decline|cancel/` |
+| Opportunités | `GET|POST /opportunities/?type=&country=&work_mode=&technology=&include_expired=`, `POST /opportunities/{id}/submit/`, `GET|POST /opportunities/{id}/interests/`, modération : `GET /opportunities/review-queue/`, `POST /opportunities/{id}/review/` |
+| Organisations | `GET|POST /organizations/`, `POST /organizations/{slug}/verify/` (admin) |
+| Mentorat | `GET /mentors/`, `GET|PUT /mentors/me/`, `GET|POST /mentorship-requests/`, `…/{id}/respond|cancel|complete/`, `…/{id}/sessions/`, `PATCH /mentorship-sessions/{id}/`, `…/{id}/feedback/` |
+| Communautés | `GET|POST /communities/`, `…/{slug}/join|leave/`, `…/members/`, `…/posts/`, `…/posts/{id}/moderate/` ; publier : `POST /posts/` avec `community` |
+| Événements | `GET /events/?when=upcoming|past|all`, `POST /events/`, `…/{id}/register/` (POST/DELETE), `…/{id}/cancel/`, `…/{id}/registrations/`, `GET /events/mine/` |
+| Messagerie | `GET|POST /conversations/` `{username, content}`, `GET|POST /conversations/{id}/messages/`, `POST /conversations/{id}/read/`, `GET|POST /blocks/`, `DELETE /blocks/{id}/` |
+| Découverte | `GET /recommendations/developers/`, `GET /recommendations/projects/` |
+| Portfolio | `GET|POST /profiles/me/portfolio/`, `GET /profiles/{username}/portfolio/` |
+
+Pas de temps réel : rafraîchir périodiquement `GET /notifications/unread-count/` et la liste des
+conversations (par exemple toutes les 30 à 60 secondes, ou au retour de focus de l'onglet).

@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
@@ -53,12 +54,31 @@ def authenticate_user(*, identifier: str, password: str) -> User:
     account = User.objects.filter(
         Q(email__iexact=identifier) | Q(username__iexact=identifier)
     ).first()
+    if account is not None and account.check_password(password):
+        lift_expired_suspension(account)
+        if account.is_suspended:
+            # Révélé uniquement à qui connaît le mot de passe.
+            until = account.suspended_until.strftime("%d/%m/%Y %H:%M UTC")
+            raise exceptions.PermissionDenied(
+                f"Compte suspendu jusqu'au {until}.", code="account_suspended"
+            )
     user = authenticate(username=account.username, password=password) if account else None
     if user is None:
         raise exceptions.AuthenticationFailed(
             "Identifiants invalides ou compte désactivé.", code="invalid_credentials"
         )
     return user
+
+
+def lift_expired_suspension(user: User) -> bool:
+    """Réactive un compte dont la suspension temporaire est échue (jamais un compte banni)."""
+    expired = user.suspended_until is not None and user.suspended_until <= timezone.now()
+    if not expired or user.is_banned:
+        return False
+    user.suspended_until = None
+    user.is_active = True
+    user.save(update_fields=["suspended_until", "is_active"])
+    return True
 
 
 def rotate_refresh_token(raw_token: str | None) -> tuple[str, str]:

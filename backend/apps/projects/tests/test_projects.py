@@ -270,3 +270,13 @@ class TestOwnershipAndLeaving:
         assert client_for(other_user).post(detail(project, "leave/")).status_code == 204
         assert client_for(other_user).post(detail(project, "leave/")).status_code == 409
         assert ProjectMember.objects.get(project=project, user=other_user).status == "LEFT"
+
+
+def test_project_hidden_by_moderation_leaves_public_spaces(api_client, client_for, user, moderator):
+    project = make_project(user)
+    Project.objects.filter(pk=project.pk).update(hidden_by_moderation=True)
+
+    assert api_client.get(URL).json()["count"] == 0
+    assert api_client.get(detail(project)).status_code == 404
+    assert client_for(user).get(detail(project)).status_code == 200
+    assert client_for(moderator).get(detail(project)).status_code == 200

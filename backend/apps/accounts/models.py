@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.db import models
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 from .validators import USERNAME_HELP, username_format_validator, validate_username_not_reserved
 
@@ -59,6 +60,10 @@ class User(AbstractUser):
         "rôle global", max_length=16, choices=Role.choices, default=Role.MEMBER, db_index=True
     )
     email_verified = models.BooleanField("e-mail vérifié", default=False)
+    suspended_until = models.DateTimeField(
+        "suspendu jusqu'au", null=True, blank=True, help_text="Suspension temporaire (modération)."
+    )
+    banned_at = models.DateTimeField("banni le", null=True, blank=True)
 
     objects = UserManager()
 
@@ -82,6 +87,14 @@ class User(AbstractUser):
         self.is_superuser = self.role == self.Role.ADMIN
         self.is_staff = self.role in {self.Role.ADMIN, self.Role.MODERATOR}
         super().save(*args, **kwargs)
+
+    @property
+    def is_suspended(self) -> bool:
+        return self.suspended_until is not None and self.suspended_until > timezone.now()
+
+    @property
+    def is_banned(self) -> bool:
+        return self.banned_at is not None
 
     @property
     def is_admin(self) -> bool:

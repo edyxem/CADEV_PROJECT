@@ -39,7 +39,8 @@ def role_of(project: Project, user: Any) -> str | None:
 
 
 def can_view(project: Project, user: Any) -> bool:
-    return project.is_public or is_moderator(user) or membership(project, user) is not None
+    publicly_visible = project.is_public and not project.hidden_by_moderation
+    return publicly_visible or is_moderator(user) or membership(project, user) is not None
 
 
 def is_owner(project: Project, user: Any) -> bool:

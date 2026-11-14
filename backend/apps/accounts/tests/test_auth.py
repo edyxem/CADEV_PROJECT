@@ -235,3 +235,51 @@ class TestLogout:
         response = api_client.post(LOGOUT_URL, HTTP_ORIGIN="https://evil.example")
 
         assert response.status_code == 403
+
+
+class TestSuspension:
+    def test_suspended_account_is_told_only_with_right_password(self, api_client):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        UserFactory(
+            username="suspendu",
+            is_active=False,
+            suspended_until=timezone.now() + timedelta(days=3),
+        )
+
+        right = login(api_client, "suspendu")
+        wrong = login(api_client, "suspendu", password="mauvais-mot-de-passe")
+
+        assert right.status_code == 403
+        assert right.json()["code"] == "account_suspended"
+        assert wrong.status_code == 401
+        assert wrong.json()["code"] == "invalid_credentials"
+
+    def test_expired_suspension_is_lifted_at_login(self, api_client):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        member = UserFactory(
+            username="revenu", is_active=False, suspended_until=timezone.now() - timedelta(hours=1)
+        )
+
+        assert login(api_client, "revenu").status_code == 200
+        member.refresh_from_db()
+        assert member.is_active and member.suspended_until is None
+
+    def test_banned_account_stays_disabled(self, api_client):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        UserFactory(
+            username="banni2",
+            is_active=False,
+            banned_at=timezone.now(),
+            suspended_until=timezone.now() - timedelta(days=1),
+        )
+
+        assert login(api_client, "banni2").status_code == 401

@@ -63,6 +63,11 @@ class Project(BaseModel):
     repository_url = models.URLField(max_length=300, blank=True, validators=[validate_http_url])
     demo_url = models.URLField(max_length=300, blank=True, validators=[validate_http_url])
     completed_at = models.DateTimeField(null=True, blank=True)
+    hidden_by_moderation = models.BooleanField(
+        "masqué par la modération",
+        default=False,
+        help_text="Retiré des espaces publics ; seuls ses membres et la modération le voient.",
+    )
 
     class Meta:
         verbose_name = "projet"

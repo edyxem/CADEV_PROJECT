@@ -17,6 +17,9 @@ class ProjectFilter(django_filters.FilterSet):
         method="filter_recruiting", label="Accepte des membres"
     )
     role = django_filters.CharFilter(method="filter_role", label="Rôle recherché (texte)")
+    member = django_filters.CharFilter(
+        method="filter_member", label="Nom d'utilisateur d'un membre actif du projet"
+    )
     q = django_filters.CharFilter(method="filter_q")
 
     class Meta:
@@ -31,6 +34,12 @@ class ProjectFilter(django_filters.FilterSet):
         if value is None:
             return queryset
         return queryset.filter(open_projects) if value else queryset.exclude(open_projects)
+
+    def filter_member(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        return queryset.filter(
+            memberships__user__username__iexact=value.strip(),
+            memberships__status="ACTIVE",
+        ).distinct()
 
     def filter_role(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         return queryset.filter(

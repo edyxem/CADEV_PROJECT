@@ -10,4 +10,5 @@ urlpatterns = [
     path("", include("apps.catalog.urls")),
     path("", include("apps.profiles.urls")),
     path("", include("apps.notifications.urls")),
+    path("", include("apps.community.urls")),
 ]

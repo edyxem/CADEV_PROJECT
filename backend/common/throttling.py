@@ -18,3 +18,16 @@ class ScopedWriteThrottle(ScopedRateThrottle):
         if request.method in SAFE_METHODS and not getattr(view, "throttle_safe_methods", False):
             return True
         return super().allow_request(request, view)
+
+
+class ActionThrottleMixin:
+    """Associe un périmètre de limitation à chaque action d'un ViewSet.
+
+    Exemple : ``action_throttle_scopes = {"create": "content_create"}``.
+    """
+
+    action_throttle_scopes: dict[str, str] = {}
+
+    def get_throttles(self) -> list[Any]:
+        self.throttle_scope = self.action_throttle_scopes.get(getattr(self, "action", ""), "")
+        return super().get_throttles()  # type: ignore[misc]

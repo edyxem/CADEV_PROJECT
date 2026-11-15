@@ -1,7 +1,8 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from rest_framework.exceptions import APIException
 
 from .models import Opportunity, OpportunityInterest, Organization
-from .services import verify_organization
+from .services import review_opportunity, verify_organization
 
 
 @admin.register(Organization)
@@ -34,6 +35,33 @@ class OpportunityAdmin(admin.ModelAdmin):
     search_fields = ["title", "organization_name", "organization__name"]
     raw_id_fields = ["publisher", "organization", "reviewed_by"]
     filter_horizontal = ["technologies"]
+    actions = ["approve", "reject"]
+
+    def _review(self, request, queryset, *, approve: bool) -> None:
+        # Même service que l'API : transitions contrôlées, journal d'audit, auteur notifié.
+        done = 0
+        for opportunity in queryset:
+            try:
+                review_opportunity(
+                    opportunity=opportunity,
+                    moderator=request.user,
+                    approve=approve,
+                    note="Décision prise depuis l'administration.",
+                )
+                done += 1
+            except APIException as error:
+                self.message_user(request, f"{opportunity} : {error.detail}", messages.ERROR)
+        if done:
+            verb = "publiée(s)" if approve else "refusée(s)"
+            self.message_user(request, f"{done} annonce(s) {verb}.", messages.SUCCESS)
+
+    @admin.action(description="Publier les annonces sélectionnées (journalisé)")
+    def approve(self, request, queryset) -> None:
+        self._review(request, queryset, approve=True)
+
+    @admin.action(description="Refuser les annonces sélectionnées (journalisé)")
+    def reject(self, request, queryset) -> None:
+        self._review(request, queryset, approve=False)
 
 
 @admin.register(OpportunityInterest)

@@ -12,8 +12,8 @@ import type { AppNotification, Paginated } from "@/lib/api/types";
 import { formatDate } from "@/lib/labels";
 import { useApi } from "@/lib/useApi";
 
-// Liens frontend existants dans cette version ; les autres modules arrivent plus tard.
-const SUPPORTED_PREFIXES = ["/publications/", "/projets/", "/membres/"];
+// Pages frontend vers lesquelles une notification peut renvoyer.
+const SUPPORTED_PREFIXES = ["/publications/", "/projets/", "/membres/", "/messages/", "/evenements/", "/opportunites/", "/mentorat", "/communautes/"];
 
 function NotificationsContent() {
   const router = useRouter();

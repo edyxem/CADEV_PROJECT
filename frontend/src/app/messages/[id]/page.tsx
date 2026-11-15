@@ -98,7 +98,7 @@ function Thread({ id }: { id: string }) {
           <span className="skeleton h-9 w-40" />
         )}
         <div className="flex items-center gap-3 text-xs">
-          <button type="button" onClick={block} className="text-muted hover:text-rose-300">
+          <button type="button" onClick={block} className="text-muted hover:text-rose-700">
             Bloquer
           </button>
         </div>

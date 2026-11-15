@@ -27,7 +27,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <p className="mt-1.5 line-clamp-2 text-sm text-muted">{project.short_description}</p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {project.technologies.map((technology) => (
-          <span key={technology.id} className="rounded-md bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-muted">{technology.name}</span>
+          <span key={technology.id} className="rounded-md bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">{technology.name}</span>
         ))}
       </div>
       <p className="mt-4 text-xs text-muted">

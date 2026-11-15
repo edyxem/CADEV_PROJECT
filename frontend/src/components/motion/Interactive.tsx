@@ -39,8 +39,8 @@ export function Magnetic({ children, strength = 0.35, className }: { children: R
 export function SpotlightCard({
   children,
   className = "",
-  tilt = true,
-  glow = "16 185 129",
+  tilt = false,
+  glow = "27 29 31",
 }: {
   children: ReactNode;
   className?: string;
@@ -54,7 +54,7 @@ export function SpotlightCard({
   const py = useMotionValue(0.5);
   const rotateX = useSpring(useTransform(py, [0, 1], [5, -5]), { stiffness: 180, damping: 18 });
   const rotateY = useSpring(useTransform(px, [0, 1], [-6, 6]), { stiffness: 180, damping: 18 });
-  const background = useMotionTemplate`radial-gradient(420px circle at ${mouseX}px ${mouseY}px, rgb(${glow} / 0.16), transparent 70%)`;
+  const background = useMotionTemplate`radial-gradient(420px circle at ${mouseX}px ${mouseY}px, rgb(${glow} / 0.05), transparent 70%)`;
 
   function onMove(event: MouseEvent<HTMLDivElement>) {
     const rect = event.currentTarget.getBoundingClientRect();

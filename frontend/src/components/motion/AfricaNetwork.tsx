@@ -16,13 +16,13 @@ export function AfricaNetwork({ className = "" }: { className?: string }) {
     <svg viewBox={`-2 -2 ${VIEW_WIDTH + 4} ${VIEW_HEIGHT + 4}`} className={className} aria-hidden role="presentation">
       <defs>
         <linearGradient id="arc-gradient" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#34d399" stopOpacity="0" />
-          <stop offset="50%" stopColor="#6ee7b7" />
-          <stop offset="100%" stopColor="#fbbf24" />
+          <stop offset="0%" stopColor="#0b6e4f" stopOpacity="0" />
+          <stop offset="50%" stopColor="#0b6e4f" />
+          <stop offset="100%" stopColor="#b06a08" />
         </linearGradient>
         <radialGradient id="dot-glow">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+          <stop offset="0%" stopColor="#b06a08" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#b06a08" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -34,9 +34,9 @@ export function AfricaNetwork({ className = "" }: { className?: string }) {
             cx={x}
             cy={y}
             r={0.58}
-            fill="#3fae86"
+            fill="#0b6e4f"
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 0.55, scale: 1 }}
+            animate={{ opacity: 0.4, scale: 1 }}
             transition={{ duration: 0.4, delay: reduced ? 0 : 0.2 + (y / VIEW_HEIGHT) * 1.1 + (x / VIEW_WIDTH) * 0.2 }}
           />
         ))}
@@ -59,7 +59,7 @@ export function AfricaNetwork({ className = "" }: { className?: string }) {
               }
             />
             {!reduced && (
-              <circle r={0.9} fill="#fde68a">
+              <circle r={0.9} fill="#b06a08">
                 <animateMotion dur="3.2s" begin={`${1.4 + index * 0.45}s`} repeatCount="indefinite" path={arc.d} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.4 0 0.2 1" />
                 <animate attributeName="opacity" values="0;1;1;0" dur="3.2s" begin={`${1.4 + index * 0.45}s`} repeatCount="indefinite" />
               </circle>
@@ -73,12 +73,12 @@ export function AfricaNetwork({ className = "" }: { className?: string }) {
         {CITIES.map((city, index) => (
           <g key={city.name} transform={`translate(${city.at[0]} ${city.at[1]})`}>
             {!reduced && (
-              <circle r={1.2} fill="none" stroke="#fbbf24" strokeWidth={0.25} className="origin-center animate-pulse-ring" style={{ animationDelay: `${index * 0.35}s`, transformBox: "fill-box" }} />
+              <circle r={1.2} fill="none" stroke="#b06a08" strokeWidth={0.25} className="origin-center animate-pulse-ring" style={{ animationDelay: `${index * 0.35}s`, transformBox: "fill-box" }} />
             )}
             <circle r={2.4} fill="url(#dot-glow)" opacity={0.6} />
             <motion.circle
               r={0.95}
-              fill="#fbbf24"
+              fill="#b06a08"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 14, delay: reduced ? 0 : 1 + index * 0.08 }}

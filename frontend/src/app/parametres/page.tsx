@@ -120,7 +120,7 @@ function SkillsEditor({ skills, onSaved }: { skills: Skill[]; onSaved: () => voi
         {skills.map((skill) => (
           <li key={skill.id} className="flex items-center justify-between rounded-xl border border-line px-3 py-2 text-sm">
             <span>{skill.technology.name} · {label(LEVELS, skill.level)} <Badge>{skill.verification_label}</Badge></span>
-            <button type="button" className="text-xs text-rose-300 hover:underline" onClick={() => save(current.filter((item) => item.technology !== skill.technology.slug))}>
+            <button type="button" className="text-xs text-rose-700 hover:underline" onClick={() => save(current.filter((item) => item.technology !== skill.technology.slug))}>
               Retirer
             </button>
           </li>

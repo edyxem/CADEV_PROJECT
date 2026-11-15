@@ -8,15 +8,15 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "light" | "onDark"
 
 const VARIANTS: Record<Variant, string> = {
   primary: "btn-primary disabled:opacity-50",
-  secondary: "border border-line bg-panel-2 text-ink hover:border-brand-400/40 hover:bg-white/5 disabled:opacity-50",
-  ghost: "text-brand-300 hover:bg-white/5 disabled:opacity-50",
-  danger: "border border-rose-400/30 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25 disabled:opacity-50",
-  light: "bg-ink text-night hover:bg-white",
-  onDark: "border border-white/15 text-ink hover:bg-white/5",
+  secondary: "border border-line bg-white text-ink hover:border-ink/30 hover:bg-panel-2 disabled:opacity-50",
+  ghost: "text-brand-300 hover:bg-ink/5 disabled:opacity-50",
+  danger: "border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-50",
+  light: "bg-ink text-white hover:bg-ink/85",
+  onDark: "border border-line text-ink hover:bg-ink/5",
 };
 
 const BASE =
-  "relative inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed";
+  "relative inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed";
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onAnimationStart" | "onDrag" | "onDragStart" | "onDragEnd"> {
   variant?: Variant;

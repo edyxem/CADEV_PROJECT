@@ -100,7 +100,7 @@ export default function OpportunityPage() {
           {opportunity.technologies.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {opportunity.technologies.map((technology) => (
-                <span key={technology.id} className="rounded-md bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-muted">
+                <span key={technology.id} className="rounded-md bg-panel-2 px-2 py-0.5 font-mono text-xs text-muted">
                   {technology.name}
                 </span>
               ))}

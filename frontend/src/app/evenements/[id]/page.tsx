@@ -78,7 +78,7 @@ export default function EventPage() {
               {event.capacity ? ` sur ${event.capacity} places` : ""}
             </p>
             {filled !== null && (
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink/5">
                 <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-ocre-400 transition-[width] duration-700" style={{ width: `${filled}%` }} />
               </div>
             )}

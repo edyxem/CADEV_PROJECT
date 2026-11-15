@@ -33,7 +33,7 @@ export function PostCard({ post }: { post: Post }) {
       {post.technologies.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {post.technologies.map((technology) => (
-            <span key={technology.id} className="rounded-md bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-muted">
+            <span key={technology.id} className="rounded-md bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">
               {technology.name}
             </span>
           ))}

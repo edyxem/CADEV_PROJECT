@@ -25,7 +25,7 @@ export function ConversationList({ activeId }: { activeId?: string }) {
 
   return (
     <aside className="rounded-2xl border border-line bg-panel p-2" aria-label="Conversations">
-      <Link href="/messages" className="mb-1 block rounded-xl px-3 py-2 text-sm font-semibold text-brand-300 hover:bg-white/5">
+      <Link href="/messages" className="mb-1 block rounded-xl px-3 py-2 text-sm font-semibold text-brand-300 hover:bg-ink/5">
         + Nouvelle conversation
       </Link>
       {list.loading && !list.data && <Loading rows={2} />}
@@ -38,7 +38,7 @@ export function ConversationList({ activeId }: { activeId?: string }) {
               <Link
                 href={`/messages/${conversation.id}`}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${active ? "text-ink" : "hover:bg-white/5"}`}
+                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${active ? "text-ink" : "hover:bg-ink/5"}`}
               >
                 {active && <motion.span layoutId="conversation-active" className="absolute inset-0 -z-10 rounded-xl bg-panel-2" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
                 <Avatar author={conversation.other} size={38} />

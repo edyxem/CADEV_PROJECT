@@ -98,7 +98,7 @@ function PublishForm() {
                 );
               })}
             </div>
-            {error?.field("technologies") && <p className="mt-1 text-xs text-rose-300">{error.field("technologies")}</p>}
+            {error?.field("technologies") && <p className="mt-1 text-xs text-rose-700">{error.field("technologies")}</p>}
           </fieldset>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={submitting === "PUBLISHED"} disabled={submitting !== null}>Publier</Button>

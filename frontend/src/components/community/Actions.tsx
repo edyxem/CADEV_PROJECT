@@ -67,7 +67,7 @@ export function VoteButton({ path, voted, count, disabled }: { path: string; vot
           )}
         </AnimatePresence>
       </motion.button>
-      {error && <span className="mt-1 text-xs text-rose-300">{error}</span>}
+      {error && <span className="mt-1 text-xs text-rose-700">{error}</span>}
     </span>
   );
 }
@@ -82,7 +82,7 @@ export function BookmarkButton({ active, onToggle }: { active: boolean; onToggle
       onClick={onToggle}
       aria-pressed={active}
       whileTap={{ scale: 0.9 }}
-      className="relative inline-flex items-center gap-2 rounded-xl border border-line bg-panel-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5 aria-pressed:border-ocre-400/50 aria-pressed:text-ocre-300"
+      className="relative inline-flex items-center gap-2 rounded-xl border border-line bg-panel-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-ink/5 aria-pressed:border-ocre-400/50 aria-pressed:text-ocre-300"
     >
       <span className="relative" aria-hidden>
         <motion.span className="inline-block" animate={active ? { rotate: [0, -20, 0], scale: [1, 1.4, 1] } : {}} transition={{ duration: 0.5 }}>
@@ -137,7 +137,7 @@ export function ReportButton({ targetType, targetId }: { targetType: string; tar
   return (
     <div>
       {!open && (
-        <button type="button" onClick={() => { setOpen(true); setResult(null); }} className="text-xs text-muted hover:text-rose-300 hover:underline">
+        <button type="button" onClick={() => { setOpen(true); setResult(null); }} className="text-xs text-muted hover:text-rose-700 hover:underline">
           Signaler
         </button>
       )}

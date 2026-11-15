@@ -9,9 +9,9 @@ import type { ApiError } from "@/lib/api/client";
 type Kind = "info" | "success" | "error";
 
 const KINDS: Record<Kind, string> = {
-  info: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+  info: "border-sky-400/25 bg-sky-400/10 text-sky-800",
   success: "border-brand-400/30 bg-brand-500/10 text-brand-200",
-  error: "border-rose-400/30 bg-rose-500/10 text-rose-100",
+  error: "border-rose-400/30 bg-rose-500/10 text-rose-700",
 };
 
 export function Alert({ kind = "info", children }: { kind?: Kind; children: ReactNode }) {

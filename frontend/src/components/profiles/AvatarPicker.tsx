@@ -98,7 +98,7 @@ function PhotoZone({
             )}
           </motion.span>
         </AnimatePresence>
-        <span className={`absolute inset-0 grid place-items-center bg-night/60 text-ink transition-opacity ${dragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+        <span className={`absolute inset-0 grid place-items-center bg-white text-ink transition-opacity ${dragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
           <span className="flex flex-col items-center gap-1 text-[11px] font-semibold">
             <CameraIcon />
             {dragging ? "Déposer" : "Changer"}
@@ -141,12 +141,12 @@ export function AvatarChooser({ name, file, onChange }: { name: string; file: Fi
         <p className="font-medium">Photo de profil <span className="font-normal text-muted">(facultative)</span></p>
         <p className="mt-0.5 text-xs text-muted">Cliquez ou glissez une image. JPEG, PNG ou WebP, 2 Mo maximum.</p>
         {file && (
-          <button type="button" onClick={() => onChange(null)} className="mt-1 text-xs text-rose-300 hover:underline">
+          <button type="button" onClick={() => onChange(null)} className="mt-1 text-xs text-rose-700 hover:underline">
             Retirer la photo
           </button>
         )}
         {error && (
-          <p className="mt-1 text-xs text-rose-300" role="alert">
+          <p className="mt-1 text-xs text-rose-700" role="alert">
             {error}
           </p>
         )}
@@ -202,7 +202,7 @@ export function AvatarUploader({ name }: { name: string }) {
           optimisée automatiquement.
         </p>
         {avatar && (
-          <button type="button" onClick={remove} disabled={busy} className="mt-2 text-xs text-rose-300 hover:underline disabled:opacity-50">
+          <button type="button" onClick={remove} disabled={busy} className="mt-2 text-xs text-rose-700 hover:underline disabled:opacity-50">
             Supprimer la photo
           </button>
         )}
@@ -213,7 +213,7 @@ export function AvatarUploader({ name }: { name: string }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               role={message.kind === "error" ? "alert" : "status"}
-              className={`mt-2 text-xs ${message.kind === "ok" ? "text-brand-300" : "text-rose-300"}`}
+              className={`mt-2 text-xs ${message.kind === "ok" ? "text-brand-300" : "text-rose-700"}`}
             >
               {message.text}
             </motion.p>

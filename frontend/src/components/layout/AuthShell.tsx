@@ -16,7 +16,7 @@ const POINTS = [
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="grid overflow-hidden rounded-[2rem] border border-line bg-panel lg:grid-cols-2">
-      <div className="grain relative hidden overflow-hidden bg-gradient-to-br from-brand-500/15 via-night to-ocre-500/10 p-10 lg:block">
+      <div className="relative hidden overflow-hidden border-r border-line bg-panel-2 p-10 lg:block">
         <div className="absolute -bottom-24 -right-24 w-[26rem] opacity-70" aria-hidden>
           <AfricaNetwork />
         </div>

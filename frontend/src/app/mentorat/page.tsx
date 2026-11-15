@@ -127,8 +127,8 @@ function RequestRow({ request, asMentor, onChange }: { request: MentorshipReques
         <Badge tone={tone}>{label(MENTORSHIP_STATUS, request.status)}</Badge>
       </div>
       <p className="mt-3 text-sm">{request.goal}</p>
-      {request.response_message && <p className="mt-2 rounded-xl bg-white/[0.03] px-3 py-2 text-sm text-muted">« {request.response_message} »</p>}
-      {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
+      {request.response_message && <p className="mt-2 rounded-xl bg-ink/[0.03] px-3 py-2 text-sm text-muted">« {request.response_message} »</p>}
+      {error && <p className="mt-2 text-sm text-rose-700">{error}</p>}
       <div className="mt-3 flex flex-wrap gap-2">
         {asMentor && request.status === "PENDING" && (
           <>
@@ -141,7 +141,7 @@ function RequestRow({ request, asMentor, onChange }: { request: MentorshipReques
         )}
         {request.status === "ACCEPTED" && (
           <>
-            <Link href={`/messages?to=${other.username}`} className="rounded-xl border border-line px-3 py-1.5 text-xs hover:bg-white/5">Écrire un message</Link>
+            <Link href={`/messages?to=${other.username}`} className="rounded-xl border border-line px-3 py-1.5 text-xs hover:bg-ink/5">Écrire un message</Link>
             <Button variant="secondary" onClick={() => act("complete")} className="px-3 py-1.5 text-xs">Marquer comme terminé</Button>
           </>
         )}

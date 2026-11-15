@@ -1,38 +1,41 @@
 @import "tailwindcss";
 
 /*
- * Thème « Nuit & Ocre » : fond nuit, émeraude pour l'action, ocre et terracotta en accents.
- * Les nuances brand-50/100 sont translucides et brand-700/800 claires : elles restent lisibles
- * sur fond sombre (texte des liens, états actifs).
+ * Thème clair : fond blanc, textes gris foncé, un seul accent (vert profond) et une touche
+ * d'ocre pour les repères secondaires. Tous les écrans lisent ces variables.
  */
 @theme {
-  --color-night: #050b08;
-  --color-surface: #070f0c;
-  --color-panel: #0d1813;
-  --color-panel-2: #13221c;
-  --color-line: #1e3029;
-  --color-ink: #e9f2ed;
-  --color-muted: #93a79e;
+  --color-night: #ffffff;
+  --color-surface: #ffffff;
+  --color-panel: #ffffff;
+  --color-panel-2: #f6f6f3;
+  --color-line: #e4e4de;
+  --color-ink: #1b1d1f;
+  --color-muted: #5d6873;
 
-  --color-brand-50: rgb(16 185 129 / 0.08);
-  --color-brand-100: rgb(16 185 129 / 0.16);
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #10b981;
-  --color-brand-700: #34d399;
-  --color-brand-800: #a7f3d0;
+  --color-brand-50: rgb(11 110 79 / 0.06);
+  --color-brand-100: rgb(11 110 79 / 0.12);
+  --color-brand-200: #0b6e4f;
+  --color-brand-300: #0b6e4f;
+  --color-brand-400: #0f8a63;
+  --color-brand-500: #0b6e4f;
+  --color-brand-600: #095c42;
+  --color-brand-700: #095c42;
+  --color-brand-800: #074a35;
 
-  --color-ocre-300: #fcd34d;
-  --color-ocre-400: #fbbf24;
-  --color-ocre-500: #f59e0b;
-  --color-terra-400: #f08a5d;
-  --color-terra-500: #e2673a;
-  --color-accent-500: #f59e0b;
+  --color-ocre-300: #9a5b06;
+  --color-ocre-400: #b06a08;
+  --color-ocre-500: #b06a08;
+  --color-terra-400: #b4532a;
+  --color-terra-500: #9a4421;
+  --color-accent-500: #b06a08;
+
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 0.75rem;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
 
   --animate-aurora: aurora 18s ease-in-out infinite alternate;
   --animate-marquee: marquee var(--marquee-duration, 40s) linear infinite;
@@ -67,7 +70,7 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
   }
 
@@ -79,12 +82,13 @@
 
   h1, h2, h3 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
+    font-weight: 650;
   }
 
   ::selection {
-    background: rgb(16 185 129 / 0.35);
-    color: #fff;
+    background: rgb(11 110 79 / 0.18);
+    color: var(--color-ink);
   }
 
   :focus-visible {
@@ -100,25 +104,26 @@
 
 @layer components {
   .btn-primary {
-    @apply rounded-lg font-semibold text-night;
-    background-image: linear-gradient(135deg, var(--color-brand-300), var(--color-brand-500) 55%, #0ea371);
-    box-shadow: 0 0 0 1px rgb(110 231 183 / 0.25) inset, 0 8px 24px -10px rgb(16 185 129 / 0.7);
+    @apply rounded-lg font-semibold text-white;
+    background: var(--color-ink);
+    transition: background-color 150ms ease, transform 120ms ease;
   }
   .btn-primary:hover {
-    filter: brightness(1.08);
+    background: #34373b;
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
   }
 
   .glass {
-    background: rgb(13 24 19 / 0.72);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    background: rgb(255 255 255 / 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
+  /* Mot mis en avant dans les titres : couleur d'accent unie, sans dégradé. */
   .text-gradient {
-    background-image: linear-gradient(100deg, var(--color-brand-300) 0%, var(--color-ocre-300) 55%, var(--color-terra-400) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--color-brand-500);
   }
 
   .grain::after {
@@ -126,20 +131,20 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.06;
+    opacity: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .grid-fade {
     background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgb(27 29 31 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(27 29 31 / 0.045) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
   }
 
   .skeleton {
-    background: linear-gradient(90deg, var(--color-panel-2) 25%, #1d3129 50%, var(--color-panel-2) 75%);
+    background: linear-gradient(90deg, var(--color-panel-2) 25%, #ebebe6 50%, var(--color-panel-2) 75%);
     background-size: 200% 100%;
     @apply animate-shimmer rounded-lg;
   }
@@ -149,16 +154,16 @@
 .rich-text p { margin: 0.6rem 0; }
 .rich-text a { color: var(--color-brand-300); text-decoration: underline; text-underline-offset: 3px; }
 .rich-text code {
-  background: rgb(255 255 255 / 0.07);
+  background: var(--color-panel-2);
   border: 1px solid var(--color-line);
   border-radius: 0.35rem;
   padding: 0.05rem 0.35rem;
   font-size: 0.88em;
 }
 .rich-text pre {
-  background: #030806;
+  background: var(--color-panel-2);
   border: 1px solid var(--color-line);
-  color: #d1fae5;
+  color: var(--color-ink);
   border-radius: 0.75rem;
   padding: 0.9rem 1rem;
   overflow-x: auto;

@@ -20,7 +20,7 @@ function CommunityCard({ initial }: { initial: CommunityItem }) {
   return (
     <SpotlightCard className="h-full p-5">
       <div className="flex items-start gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/5 text-2xl" aria-hidden>
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ink/5 text-2xl" aria-hidden>
           {ICONS[community.kind] ?? "✦"}
         </span>
         <div className="min-w-0">

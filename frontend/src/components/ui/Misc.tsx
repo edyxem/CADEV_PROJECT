@@ -8,23 +8,17 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 }
 
 const TONES = {
-  neutral: "border-line bg-white/[0.04] text-muted",
+  neutral: "border-line bg-panel-2 text-muted",
   brand: "border-brand-400/30 bg-brand-500/10 text-brand-200",
   accent: "border-ocre-400/30 bg-ocre-500/10 text-ocre-300",
-  danger: "border-rose-400/30 bg-rose-500/10 text-rose-200",
+  danger: "border-rose-400/30 bg-rose-500/10 text-rose-700",
 };
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: keyof typeof TONES }) {
   return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${TONES[tone]}`}>{children}</span>;
 }
 
-const AVATAR_GRADIENTS = [
-  "from-brand-400 to-brand-600",
-  "from-ocre-400 to-terra-500",
-  "from-sky-400 to-brand-500",
-  "from-terra-400 to-rose-500",
-  "from-violet-400 to-sky-500",
-];
+const AVATAR_GRADIENTS = ["bg-[#0b6e4f]", "bg-[#b06a08]", "bg-[#3f5873]", "bg-[#9a4421]", "bg-[#4b4f56]"];
 
 export function Avatar({ author, size = 36 }: { author: Pick<Author, "display_name" | "avatar">; size?: number }) {
   const initials = author.display_name
@@ -37,14 +31,14 @@ export function Avatar({ author, size = 36 }: { author: Pick<Author, "display_na
     return (
       // Les avatars sont réencodés et dimensionnés par l'API (WebP 512 px).
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={author.avatar} alt="" width={size} height={size} className="rounded-full object-cover ring-2 ring-line" style={{ width: size, height: size }} />
+      <img src={author.avatar} alt="" width={size} height={size} className="rounded-full object-cover ring-1 ring-line" style={{ width: size, height: size }} />
     );
   }
   const gradient = AVATAR_GRADIENTS[author.display_name.length % AVATAR_GRADIENTS.length];
   return (
     <span
       aria-hidden
-      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-display font-bold text-night ring-2 ring-line ${gradient}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-display font-semibold text-white ${gradient}`}
       style={{ width: size, height: size, fontSize: size / 2.6 }}
     >
       {initials}
@@ -101,13 +95,13 @@ export function Pagination({
   };
   return (
     <nav aria-label="Pagination" className="mt-8 flex items-center justify-between text-sm">
-      <button type="button" disabled={page <= 1} onClick={() => goTo(page - 1)} className="rounded-xl border border-line bg-panel px-4 py-2 transition-colors hover:bg-white/5 disabled:opacity-40">
+      <button type="button" disabled={page <= 1} onClick={() => goTo(page - 1)} className="rounded-xl border border-line bg-panel px-4 py-2 transition-colors hover:bg-ink/5 disabled:opacity-40">
         ← Précédent
       </button>
       <span className="text-muted">
         Page <span className="font-semibold text-ink">{page}</span> sur {pages}
       </span>
-      <button type="button" disabled={page >= pages} onClick={() => goTo(page + 1)} className="rounded-xl border border-line bg-panel px-4 py-2 transition-colors hover:bg-white/5 disabled:opacity-40">
+      <button type="button" disabled={page >= pages} onClick={() => goTo(page + 1)} className="rounded-xl border border-line bg-panel px-4 py-2 transition-colors hover:bg-ink/5 disabled:opacity-40">
         Suivant →
       </button>
     </nav>

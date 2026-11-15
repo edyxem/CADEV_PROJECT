@@ -34,6 +34,7 @@ export function Header() {
   const [hidden, setHidden] = useState(false);
   const [unread, setUnread] = useState(0);
   const [explore, setExplore] = useState(false);
+  const [account, setAccount] = useState(false);
   // Vrai tant que la souris survole le menu : un clic ne doit alors pas le refermer.
   const exploreHovered = useRef(false);
   const exploreActive = EXPLORE.some((item) => pathname.startsWith(item.href));
@@ -75,9 +76,9 @@ export function Header() {
       animate={{ y: hidden ? -110 : 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 32 }}
     >
-      <div className="glass mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-line px-3 py-2 shadow-[0_10px_40px_-12px_rgb(0_0_0/0.6)] sm:px-4">
+      <div className="glass mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-line px-3 py-2 shadow-[0_1px_0_rgb(0_0_0/0.04)] sm:px-4">
         <Link href="/" className="group flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-sm text-night shadow-[0_0_20px_-4px_rgb(16_185_129/0.8)] transition-transform group-hover:rotate-6">
+          <span className="relative grid h-8 w-8 place-items-center rounded-lg bg-ink text-sm text-white transition-transform group-hover:rotate-6">
             A
           </span>
           <span>
@@ -141,10 +142,10 @@ export function Header() {
                   transition={{ duration: 0.18 }}
                   className="absolute left-1/2 top-full w-72 -translate-x-1/2 pt-2"
                 >
-                  <div className="rounded-2xl border border-line bg-panel p-2 shadow-2xl" onClick={() => setExplore(false)}>
+                  <div className="rounded-2xl border border-line bg-panel p-2 shadow-lg" onClick={() => setExplore(false)}>
                     {EXPLORE.map((item, index) => (
                       <motion.div key={item.href} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.03 * index }}>
-                        <Link href={item.href} className="group block rounded-xl px-3 py-2.5 hover:bg-white/5">
+                        <Link href={item.href} className="group block rounded-xl px-3 py-2.5 hover:bg-ink/5">
                           <span className="text-sm font-medium group-hover:text-brand-200">{item.label}</span>
                           <span className="block text-xs text-muted">{item.text}</span>
                         </Link>
@@ -163,12 +164,12 @@ export function Header() {
               <Link href="/publier" className="btn-primary hidden px-3.5 py-2 text-sm sm:inline-flex">
                 + Publier
               </Link>
-              <Link href="/messages" className="grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-white/5 hover:text-ink" aria-label="Messages" title="Messages">
+              <Link href="/messages" className="grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-ink/5 hover:text-ink" aria-label="Messages" title="Messages">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </Link>
-              <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-white/5 hover:text-ink" aria-label={`Notifications (${unread} non lues)`}>
+              <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-ink/5 hover:text-ink" aria-label={`Notifications (${unread} non lues)`}>
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
                   <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                   <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
@@ -186,9 +187,45 @@ export function Header() {
                   )}
                 </AnimatePresence>
               </Link>
-              <Link href={`/membres/${user.username}`} className="hidden rounded-xl p-1 transition-colors hover:bg-white/5 sm:block" title="Mon profil public">
-                <Avatar author={{ display_name: user.first_name || user.username, avatar }} size={32} />
-              </Link>
+              <div
+                className="relative hidden sm:block"
+                onKeyDown={(event) => event.key === "Escape" && setAccount(false)}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) setAccount(false);
+                }}
+              >
+                <button
+                  type="button"
+                  aria-expanded={account}
+                  aria-haspopup="true"
+                  aria-label="Menu du compte"
+                  onClick={() => setAccount((value) => !value)}
+                  className="rounded-full p-1 transition-colors hover:bg-ink/5"
+                >
+                  <Avatar author={{ display_name: user.first_name || user.username, avatar }} size={32} />
+                </button>
+                <AnimatePresence>
+                  {account && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                      transition={{ duration: 0.16 }}
+                      className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-line bg-panel p-1.5 shadow-lg"
+                      onClick={() => setAccount(false)}
+                    >
+                      <p className="truncate px-3 py-2 text-xs text-muted">@{user.username}</p>
+                      <Link href={`/membres/${user.username}`} className="block rounded-lg px-3 py-2 text-sm hover:bg-ink/5">Mon profil public</Link>
+                      <Link href="/tableau-de-bord" className="block rounded-lg px-3 py-2 text-sm hover:bg-ink/5">Tableau de bord</Link>
+                      <Link href="/parametres" className="block rounded-lg px-3 py-2 text-sm hover:bg-ink/5">Paramètres du profil</Link>
+                      <div className="my-1 h-px bg-line" />
+                      <button type="button" onClick={handleLogout} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-rose-700 hover:bg-rose-50">
+                        Se déconnecter
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </>
           ) : status === "anonymous" ? (
             <>
@@ -202,7 +239,7 @@ export function Header() {
           ) : null}
           <button
             type="button"
-            className="grid h-10 w-10 place-items-center rounded-xl hover:bg-white/5 md:hidden"
+            className="grid h-10 w-10 place-items-center rounded-xl hover:bg-ink/5 md:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
@@ -224,19 +261,19 @@ export function Header() {
             initial={{ opacity: 0, y: -12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -12, scale: 0.98 }}
-            className="mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-6xl overflow-y-auto rounded-2xl border border-line bg-panel p-2 shadow-2xl md:hidden"
+            className="mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-6xl overflow-y-auto rounded-2xl border border-line bg-panel p-2 shadow-lg md:hidden"
             onClick={() => setOpen(false)}
           >
             {links.map((link, index) => (
               <motion.div key={link.href} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.04 * index }}>
-                <Link href={link.href} className="block rounded-xl px-3 py-3 text-sm hover:bg-white/5">
+                <Link href={link.href} className="block rounded-xl px-3 py-3 text-sm hover:bg-ink/5">
                   {link.label}
                 </Link>
               </motion.div>
             ))}
             <p className="px-3 pb-1 pt-3 text-[11px] uppercase tracking-wider text-muted">Explorer</p>
             {EXPLORE.map((item) => (
-              <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-3 text-sm hover:bg-white/5">
+              <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-3 text-sm hover:bg-ink/5">
                 {item.label}
               </Link>
             ))}
@@ -249,7 +286,7 @@ export function Header() {
                 <Link href="/notifications" className="block rounded-xl px-3 py-3 text-sm">Notifications {unread > 0 ? `(${unread})` : ""}</Link>
                 <Link href={`/membres/${user.username}`} className="block rounded-xl px-3 py-3 text-sm">Mon profil public</Link>
                 <Link href="/parametres" className="block rounded-xl px-3 py-3 text-sm">Paramètres du profil</Link>
-                <button type="button" onClick={handleLogout} className="block w-full rounded-xl px-3 py-3 text-left text-sm text-rose-300">
+                <button type="button" onClick={handleLogout} className="block w-full rounded-xl px-3 py-3 text-left text-sm text-rose-700">
                   Se déconnecter
                 </button>
               </>
@@ -259,14 +296,6 @@ export function Header() {
           </motion.nav>
         )}
       </AnimatePresence>
-
-      {status === "authenticated" && (
-        <div className="mx-auto mt-1 hidden max-w-6xl justify-end gap-4 px-4 text-xs text-muted md:flex">
-          <Link href="/tableau-de-bord" className="hover:text-ink">Tableau de bord</Link>
-          <Link href="/parametres" className="hover:text-ink">Paramètres du profil</Link>
-          <button type="button" onClick={handleLogout} className="hover:text-ink">Se déconnecter</button>
-        </div>
-      )}
     </motion.header>
   );
 }

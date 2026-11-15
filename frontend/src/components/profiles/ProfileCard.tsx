@@ -30,7 +30,7 @@ export function ProfileCard({ profile }: { profile: Profile }) {
           {profile.skills && profile.skills.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {profile.skills.slice(0, 5).map((skill) => (
-                <span key={skill.id} className="rounded-md bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-muted">{skill.technology.name}</span>
+                <span key={skill.id} className="rounded-md bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">{skill.technology.name}</span>
               ))}
             </div>
           )}

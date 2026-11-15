@@ -91,7 +91,7 @@ export default function PostPage() {
           {status === "authenticated" && data.status === "PUBLISHED" && (
             <BookmarkButton active={isBookmarked} onToggle={toggleBookmark} />
           )}
-          {data.can_edit && <Button type="button" variant="ghost" onClick={remove} className="text-rose-300">Supprimer</Button>}
+          {data.can_edit && <Button type="button" variant="ghost" onClick={remove} className="text-rose-700">Supprimer</Button>}
           <span className="ml-auto"><ReportButton targetType="POST" targetId={data.id} /></span>
         </div>
       </Card>

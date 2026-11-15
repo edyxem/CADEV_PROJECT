@@ -125,7 +125,7 @@ function TasksContent() {
             >
               <h2 className="mb-3 flex items-center justify-between text-sm font-semibold">
                 {column.label}
-                <span className="rounded-full bg-white/5 px-2 py-0.5 text-xs text-muted">{column.tasks.length}</span>
+                <span className="rounded-full bg-ink/5 px-2 py-0.5 text-xs text-muted">{column.tasks.length}</span>
               </h2>
               <div className="space-y-2">
                 <AnimatePresence initial={false}>

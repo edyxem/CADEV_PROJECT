@@ -22,36 +22,28 @@ const FEATURES = [
   {
     title: "Questions & réponses",
     text: "Posez une question précise, recevez des réponses votées et acceptez celle qui vous débloque.",
-    icon: "?",
-    glow: "16 185 129",
     span: "md:col-span-2",
   },
   {
     title: "Annuaire de talents",
     text: "Filtrez par technologie, pays, disponibilité et niveau déclaré.",
-    icon: "◎",
-    glow: "245 158 11",
     span: "",
   },
   {
     title: "Projets & équipes",
     text: "Publiez un appel à collaboration, acceptez des demandes et suivez vos tâches en Kanban.",
-    icon: "⬡",
-    glow: "226 103 58",
     span: "",
   },
   {
     title: "Confiance & modération",
     text: "Signalements, modération journalisée et compétences déclarées clairement distinguées des preuves.",
-    icon: "◈",
-    glow: "56 189 248",
     span: "md:col-span-2",
   },
 ];
 
 function StatPill({ label, value }: { label: string; value: number | undefined }) {
   return (
-    <div className="rounded-2xl border border-line bg-panel/70 px-4 py-3 backdrop-blur">
+    <div className="border-l border-line px-4 py-1">
       <p className="font-display text-2xl font-bold sm:text-3xl">
         {value === undefined ? <span className="skeleton inline-block h-7 w-12 align-middle" /> : <CountUp value={value} />}
       </p>
@@ -63,14 +55,12 @@ function StatPill({ label, value }: { label: string; value: number | undefined }
 function FloatingCard({ className, delay, children }: { className: string; delay: number; children: React.ReactNode }) {
   return (
     <motion.div
-      className={`glass absolute z-10 hidden max-w-[15rem] rounded-2xl border border-line p-3 text-xs shadow-2xl lg:block ${className}`}
+      className={`glass absolute z-10 hidden max-w-[15rem] rounded-2xl border border-line p-3 text-xs shadow-lg lg:block ${className}`}
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.8, delay, ease: EASE }}
     >
-      <div className="animate-float" style={{ animationDelay: `${delay}s` }}>
-        {children}
-      </div>
+      {children}
     </motion.div>
   );
 }
@@ -142,14 +132,13 @@ export default function HomePage() {
         </div>
 
         <div className="relative">
-          <div className="absolute inset-10 -z-10 rounded-full bg-brand-500/20 blur-[90px]" aria-hidden />
           <motion.div
             className="relative mx-auto aspect-[100/104] w-full max-w-[34rem]"
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.1, ease: EASE }}
           >
-            <AfricaNetwork className="h-full w-full drop-shadow-[0_0_30px_rgb(16_185_129/0.25)]" />
+            <AfricaNetwork className="h-full w-full drop-" />
           </motion.div>
 
           {latestQuestion && (
@@ -196,14 +185,10 @@ export default function HomePage() {
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {FEATURES.map((feature, index) => (
             <Reveal key={feature.title} delay={index * 0.08} className={feature.span}>
-              <SpotlightCard className="h-full p-6 sm:p-8" glow={feature.glow}>
-                <div
-                  className="mb-6 grid h-12 w-12 place-items-center rounded-2xl border border-line text-xl"
-                  style={{ background: `rgb(${feature.glow} / 0.12)`, color: `rgb(${feature.glow})` }}
-                  aria-hidden
-                >
-                  {feature.icon}
-                </div>
+              <SpotlightCard className="h-full p-6 sm:p-8">
+                <p className="mb-8 font-mono text-xs tabular-nums text-muted" aria-hidden>
+                  {String(index + 1).padStart(2, "0")}
+                </p>
                 <h3 className="font-display text-xl font-semibold">{feature.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{feature.text}</p>
               </SpotlightCard>
@@ -261,9 +246,7 @@ export default function HomePage() {
 
       {/* ── Appel final ──────────────────────────────────────────────────── */}
       <Reveal>
-        <section className="grain relative overflow-hidden rounded-[2rem] border border-line bg-gradient-to-br from-brand-500/20 via-panel to-ocre-500/15 px-6 py-16 text-center sm:px-16">
-          <div className="absolute -left-20 top-0 h-64 w-64 animate-aurora rounded-full bg-brand-400/25 blur-3xl" aria-hidden />
-          <div className="absolute -right-20 bottom-0 h-64 w-64 animate-aurora rounded-full bg-ocre-400/20 blur-3xl [animation-delay:-8s]" aria-hidden />
+        <section className="relative overflow-hidden rounded-2xl border border-line bg-panel-2 px-6 py-16 text-center sm:px-16">
           <h2 className="relative mx-auto max-w-2xl font-display text-3xl font-bold sm:text-5xl">
             Votre prochaine collaboration commence par une question.
           </h2>

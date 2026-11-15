@@ -164,7 +164,7 @@ export default function ProjectPage() {
               </select>
             </label>
           )}
-          {data.my_role && data.my_role !== "OWNER" && <Button type="button" variant="ghost" className="text-rose-300" onClick={leave}>Quitter le projet</Button>}
+          {data.my_role && data.my_role !== "OWNER" && <Button type="button" variant="ghost" className="text-rose-700" onClick={leave}>Quitter le projet</Button>}
           {!data.my_role && <span className="ml-auto"><ReportButton targetType="PROJECT" targetId={data.id} /></span>}
         </div>
       </Card>

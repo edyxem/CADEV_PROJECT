@@ -43,11 +43,11 @@ export function JoinButton({ community, onChange }: { community: CommunityItem; 
         whileTap={{ scale: 0.95 }}
         disabled={busy}
         onClick={toggle}
-        className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${member ? "border border-line text-muted hover:border-rose-400/50 hover:text-rose-300" : "btn-primary"}`}
+        className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${member ? "border border-line text-muted hover:border-rose-400/50 hover:text-rose-700" : "btn-primary"}`}
       >
         {member ? (community.my_role === "LEADER" ? "Responsable · quitter" : "Membre · quitter") : "Rejoindre"}
       </motion.button>
-      {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-700">{error}</p>}
     </div>
   );
 }

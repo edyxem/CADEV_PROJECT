@@ -1,7 +1,7 @@
 import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 const CONTROL =
-  "mt-1.5 block w-full rounded-xl border border-line bg-night/60 px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 transition-[border-color,box-shadow] duration-200 focus:border-brand-400/70 focus:outline-none focus:ring-4 focus:ring-brand-500/15 aria-[invalid=true]:border-rose-400/70";
+  "mt-1.5 block w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 transition-[border-color,box-shadow] duration-200 focus:border-brand-400/70 focus:outline-none focus:ring-4 focus:ring-brand-500/15 aria-[invalid=true]:border-rose-400/70";
 
 interface WrapperProps {
   label: string;
@@ -25,7 +25,7 @@ function FieldWrapper({ label, error, hint, children }: WrapperProps) {
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs text-rose-300">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs text-rose-700">
           {error}
         </p>
       )}

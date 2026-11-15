@@ -50,7 +50,7 @@ export function RegisterButton({ event, onChange }: { event: EventItem; onChange
       >
         {current.is_registered ? "✓ Inscrit · se désinscrire" : full ? "Complet" : "S'inscrire"}
       </motion.button>
-      {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-700">{error}</p>}
     </div>
   );
 }

@@ -21,7 +21,10 @@ const TYPES = [
 
 function PublishForm() {
   const router = useRouter();
-  const initialType = useSearchParams().get("type") === "QUESTION" ? "QUESTION" : "DISCUSSION";
+  const params = useSearchParams();
+  const initialType = params.get("type") === "QUESTION" ? "QUESTION" : "DISCUSSION";
+  // Publication depuis la page d'une communauté (?community=slug).
+  const community = params.get("community");
   const { categories, technologies } = useReferences();
   const [form, setForm] = useState({ type: initialType, title: "", category: "", content: "", environment: "" });
   const [selected, setSelected] = useState<string[]>([]);
@@ -46,6 +49,7 @@ function PublishForm() {
           content: textToHtml(form.content),
           environment: isQuestion ? form.environment : "",
           technologies: selected,
+          ...(community ? { community } : {}),
           status,
         },
       });
@@ -58,7 +62,7 @@ function PublishForm() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle title={isQuestion ? "Poser une question" : "Publier"} subtitle="Un titre précis et un contenu clair aident la communauté à vous répondre." />
+      <PageTitle title={isQuestion ? "Poser une question" : "Publier"} subtitle={community ? `Dans la communauté « ${community} ». Un titre précis aide les membres à vous répondre.` : "Un titre précis et un contenu clair aident la communauté à vous répondre."} />
       <Card>
         {error && <Alert kind="error">{error.code === "validation_error" ? "Vérifiez les champs signalés." : error.message}</Alert>}
         <form onSubmit={(event) => submit("PUBLISHED", event)} noValidate>

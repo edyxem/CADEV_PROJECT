@@ -4,6 +4,7 @@ import { Suspense, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { RequireAuth } from "@/components/layout/RequireAuth";
+import { AvatarUploader } from "@/components/profiles/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Alert, ErrorState, Loading } from "@/components/ui/Feedback";
 import { Input, Select, Textarea } from "@/components/ui/Field";
@@ -137,7 +138,9 @@ function SkillsEditor({ skills, onSaved }: { skills: Skill[]; onSaved: () => voi
 }
 
 function SettingsContent() {
-  const welcome = useSearchParams().get("bienvenue") === "1";
+  const params = useSearchParams();
+  const welcome = params.get("bienvenue") === "1";
+  const photoFailed = params.get("photo") === "echec";
   const profile = useApi<OwnProfile>("/profiles/me/");
   const skills = useApi<Skill[]>("/profiles/me/skills/");
 
@@ -149,6 +152,10 @@ function SettingsContent() {
     <div className="mx-auto max-w-2xl space-y-5">
       <PageTitle title="Mon profil" subtitle="Complétez votre profil pour être trouvé par d'autres développeurs." />
       {welcome && <Alert kind="success">Bienvenue ! Votre compte est créé. Complétez votre profil quand vous le souhaitez.</Alert>}
+      {photoFailed && <Alert kind="error">Votre photo n&apos;a pas pu être enregistrée. Réessayez ci-dessous.</Alert>}
+      <Card>
+        <AvatarUploader name={profile.data.display_name} />
+      </Card>
       <ProfileForm profile={profile.data} onSaved={profile.reload} />
       <SkillsEditor skills={skills.data ?? []} onSaved={skills.reload} />
     </div>

@@ -11,6 +11,9 @@ interface AuthContextValue {
   user: Account | null;
   status: Status;
   isModerator: boolean;
+  /** Photo de profil du membre connecté (URL absolue), ou null. */
+  avatar: string | null;
+  setAvatar: (url: string | null) => void;
   login: (identifier: string, password: string) => Promise<void>;
   register: (data: { username: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
@@ -21,6 +24,22 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Account | null>(null);
   const [status, setStatus] = useState<Status>("loading");
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const username = user?.username ?? null;
+
+  // La photo vient du profil : chargée à chaque ouverture de session.
+  useEffect(() => {
+    if (username === null) return;
+    let active = true;
+    api<{ avatar: string | null }>("/profiles/me/")
+      .then((profile) => {
+        if (active) setAvatar(profile.avatar);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [username]);
 
   // Au chargement : la session est restaurée à partir du cookie de rafraîchissement.
   useEffect(() => {
@@ -89,11 +108,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       status,
       isModerator: user?.role === "MODERATOR" || user?.role === "ADMIN",
+      // Après une déconnexion, l'ancienne photo n'est plus exposée.
+      avatar: user ? avatar : null,
+      setAvatar,
       login,
       register,
       logout,
     }),
-    [user, status, login, register, logout],
+    [user, status, avatar, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

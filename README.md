@@ -21,6 +21,7 @@ Next.js du dossier [`frontend/`](frontend). Spécification de référence : [doc
 | Exécution | Gunicorn, WhiteNoise, Docker multi-étapes (utilisateur non-root) |
 | Qualité | pytest, pytest-django, factory_boy, ruff, pre-commit, GitHub Actions |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Motion, Vitest |
+| Administration | Django Admin + Jazzmin, thème et animations sur mesure |
 
 Toutes les versions sont figées dans [`requirements/`](requirements).
 
@@ -70,7 +71,7 @@ docker compose exec backend python manage.py seed_demo
 - API : http://localhost:8000/api/v1/
 - Swagger : http://localhost:8000/api/docs/ — ReDoc : http://localhost:8000/api/redoc/
 - Santé : http://localhost:8000/api/v1/health/
-- Admin Django : http://localhost:8000/admin/ (compte `demo_admin`)
+- Administration : http://localhost:8000/admin/ (compte `demo_admin`)
 
 Le conteneur attend PostgreSQL, applique les migrations, collecte les fichiers statiques et
 charge les référentiels (`SEED_REFERENCE=1`). `SEED_DEMO=1` charge aussi la démo au démarrage.
@@ -104,6 +105,10 @@ réalisées avec Motion :
 - micro-interactions : vote, favori, boutons magnétiques, badge de notifications ;
 - tableau des tâches en glisser-déposer, avec mise à jour optimiste et retour arrière si la
   transition est refusée par l'API ;
+- tous les parcours du produit : fil, questions, publication, profils et annuaire, projets
+  (demandes, tâches), opportunités, événements, communautés, mentorat, messagerie privée,
+  notifications, modération, tableau de bord personnel avec recommandations, mot de passe
+  oublié et vérification d'adresse e-mail ;
 - réglage système « réduire les animations » respecté partout.
 
 ```bash
@@ -117,6 +122,20 @@ npm run lint && npm run typecheck && npm test && npm run build
 Le jeton d'accès reste en mémoire ; la session est restaurée via le cookie de rafraîchissement
 `HttpOnly` émis par l'API. En Docker, l'image est construite en sortie `standalone` et
 s'exécute avec un utilisateur non-root ; `NEXT_PUBLIC_API_BASE_URL` est figée à la construction.
+
+## Administration
+
+L'administration Django (`/admin/`) utilise [Jazzmin](https://github.com/farridav/django-jazzmin)
+avec un thème « Nuit & Ocre » assorti au site
+([`admin_theme.py`](backend/config/settings/admin_theme.py),
+[`common/static/afridev_admin/`](backend/common/static/afridev_admin)) :
+
+- page de connexion avec la carte de l'Afrique animée, titre cinétique et bordure lumineuse ;
+- tableau de bord avec indicateurs animés (membres, publications, projets, signalements et
+  annonces à traiter, événements à venir) et courbes d'activité sur 14 jours, alimentés par
+  `GET /admin/afridev-stats/` (réservé au staff) ;
+- menu latéral organisé par domaine, apparitions en cascade, halo qui suit le curseur ;
+- réglage système « réduire les animations » respecté.
 
 ## Commandes
 
@@ -177,7 +196,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ## Qualité
 
-- 492 tests, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
+- 500 tests backend, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
 - Permissions testées par rôle (anonyme, membre, auteur, autre membre, rôles projet,
   modérateur, administrateur), IDOR, non-fuite des champs privés, transitions interdites,
   limites de débit.
@@ -262,7 +281,9 @@ Choix et limites : [ADR 0006](docs/adr/0006-extensions-p2.md).
 - La réputation est recalculée après chaque transaction concernée ; à forte charge, un
   recalcul différé (file de tâches) serait préférable.
 - La CI GitHub Actions a été reproduite localement (lint, migrations, `check --deploy`,
-  schéma, tests, image) ; son exécution sur GitHub est à confirmer au premier push.
+  schéma, tests, frontend, images) ; son résultat sur GitHub est à consulter dans l'onglet
+  Actions du dépôt.
+- Pas de déploiement public : la démonstration se lance en local avec Docker.
 
 ## Feuille de route
 
@@ -273,6 +294,8 @@ Choix et limites : [ADR 0006](docs/adr/0006-extensions-p2.md).
 
 ## Documentation
 
+- [Dossier de présentation du projet (hackathon)](docs/dossier_hackathon.md)
+- [Guide d'utilisation](docs/guide_utilisation.md)
 - [Guide d'intégration frontend](docs/api.md)
 - [Modération](docs/moderation.md)
 - [Réputation et badges](docs/reputation.md)

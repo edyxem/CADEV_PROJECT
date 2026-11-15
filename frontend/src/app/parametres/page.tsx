@@ -74,7 +74,7 @@ function ProfileForm({ profile, onSaved }: { profile: OwnProfile; onSaved: () =>
           <Select label="Niveau déclaré" options={fromMap(LEVELS, "Non renseigné")} value={form.experience_level} onChange={update("experience_level")} />
           <Select label="Disponibilité" options={fromMap(AVAILABILITY)} value={form.availability_status} onChange={update("availability_status")} />
         </div>
-        <fieldset className="mb-4 space-y-2 rounded-lg border border-line p-3 text-sm">
+        <fieldset className="mb-4 space-y-2 rounded-xl border border-line p-3 text-sm">
           <legend className="px-1 font-medium">Confidentialité</legend>
           <Select label="Visibilité du profil" options={[{ value: "PUBLIC", label: "Public" }, { value: "PRIVATE", label: "Privé" }]} value={form.profile_visibility} onChange={update("profile_visibility")} />
           <label className="flex items-center gap-2"><input type="checkbox" checked={form.show_city} onChange={update("show_city")} /> Afficher ma ville</label>
@@ -117,9 +117,9 @@ function SkillsEditor({ skills, onSaved }: { skills: Skill[]; onSaved: () => voi
       {error && <Alert kind="error">{error}</Alert>}
       <ul className="mb-4 space-y-2">
         {skills.map((skill) => (
-          <li key={skill.id} className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm">
+          <li key={skill.id} className="flex items-center justify-between rounded-xl border border-line px-3 py-2 text-sm">
             <span>{skill.technology.name} · {label(LEVELS, skill.level)} <Badge>{skill.verification_label}</Badge></span>
-            <button type="button" className="text-xs text-red-700 hover:underline" onClick={() => save(current.filter((item) => item.technology !== skill.technology.slug))}>
+            <button type="button" className="text-xs text-rose-300 hover:underline" onClick={() => save(current.filter((item) => item.technology !== skill.technology.slug))}>
               Retirer
             </button>
           </li>

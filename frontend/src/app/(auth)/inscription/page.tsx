@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { AuthShell } from "@/components/layout/AuthShell";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Feedback";
 import { Input } from "@/components/ui/Field";
-import { Card } from "@/components/ui/Misc";
 import { ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
@@ -36,9 +36,7 @@ export default function RegisterPage() {
     setForm((previous) => ({ ...previous, [field]: event.target.value }));
 
   return (
-    <Card className="mx-auto max-w-md">
-      <h1 className="mb-1 text-2xl font-semibold">Créer un compte</h1>
-      <p className="mb-6 text-sm text-muted">Trois informations suffisent ; vous compléterez votre profil ensuite.</p>
+    <AuthShell title="Créer un compte" subtitle="Trois informations suffisent ; vous compléterez votre profil ensuite.">
       {error && error.code !== "validation_error" && <Alert kind="error">{error.message}</Alert>}
       <form onSubmit={onSubmit} noValidate>
         <Input label="Nom d'utilisateur" value={form.username} onChange={update("username")} hint="3 à 30 caractères : lettres, chiffres et tiret bas." error={error?.field("username")} autoComplete="username" required />
@@ -47,8 +45,8 @@ export default function RegisterPage() {
         <Button type="submit" loading={submitting} className="w-full">Créer mon compte</Button>
       </form>
       <p className="mt-4 text-center text-sm text-muted">
-        Déjà membre ? <Link href="/connexion" className="text-brand-700 underline">Se connecter</Link>
+        Déjà membre ? <Link href="/connexion" className="text-brand-300 underline">Se connecter</Link>
       </p>
-    </Card>
+    </AuthShell>
   );
 }

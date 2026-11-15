@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ReportButton, VoteButton } from "@/components/community/Actions";
+import { BookmarkButton, ReportButton, VoteButton } from "@/components/community/Actions";
 import { Answers, Comments } from "@/components/community/Discussion";
 import { Button } from "@/components/ui/Button";
 import { Alert, ErrorState, Loading } from "@/components/ui/Feedback";
@@ -81,7 +81,7 @@ export default function PostPage() {
         </div>
         <div className="mt-4"><RichText html={data.content} /></div>
         {data.environment && (
-          <div className="mt-4 rounded-lg bg-stone-50 p-3 text-sm">
+          <div className="mt-4 rounded-lg bg-panel-2 p-3 text-sm">
             <p className="font-medium">Environnement</p>
             <p className="whitespace-pre-line text-muted">{data.environment}</p>
           </div>
@@ -89,11 +89,9 @@ export default function PostPage() {
         <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
           <VoteButton path={`/posts/${data.id}/vote/`} voted={data.has_voted} count={data.vote_count} disabled={data.can_edit} />
           {status === "authenticated" && data.status === "PUBLISHED" && (
-            <Button type="button" variant="secondary" onClick={toggleBookmark} aria-pressed={isBookmarked}>
-              {isBookmarked ? "★ Enregistrée" : "☆ Enregistrer"}
-            </Button>
+            <BookmarkButton active={isBookmarked} onToggle={toggleBookmark} />
           )}
-          {data.can_edit && <Button type="button" variant="ghost" onClick={remove} className="text-red-700">Supprimer</Button>}
+          {data.can_edit && <Button type="button" variant="ghost" onClick={remove} className="text-rose-300">Supprimer</Button>}
           <span className="ml-auto"><ReportButton targetType="POST" targetId={data.id} /></span>
         </div>
       </Card>

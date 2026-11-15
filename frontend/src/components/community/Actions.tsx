@@ -1,6 +1,9 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+
+import { RollingNumber } from "@/components/motion/Kinetic";
 
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Feedback";
@@ -31,18 +34,76 @@ export function VoteButton({ path, voted, count, disabled }: { path: string; vot
 
   return (
     <span className="inline-flex flex-col">
-      <button
+      <motion.button
         type="button"
         onClick={toggle}
         disabled={status !== "authenticated" || disabled || pending}
         aria-pressed={state.voted}
+        aria-label={state.voted ? "Retirer mon vote utile" : "Voter utile"}
         title={status === "authenticated" ? "Vote utile" : "Connectez-vous pour voter"}
-        className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1 text-sm aria-pressed:border-brand-600 aria-pressed:bg-brand-50 aria-pressed:text-brand-800 disabled:opacity-60"
+        whileTap={{ scale: 0.88 }}
+        className="relative inline-flex items-center gap-1.5 rounded-xl border border-line bg-panel px-3 py-1.5 text-sm transition-colors aria-pressed:border-brand-400/60 aria-pressed:bg-brand-50 aria-pressed:text-brand-200 disabled:opacity-60"
       >
-        ▲ <span>{state.count}</span>
-      </button>
-      {error && <span className="mt-1 text-xs text-red-700">{error}</span>}
+        <motion.span
+          aria-hidden
+          animate={state.voted ? { y: [0, -5, 0], scale: [1, 1.35, 1] } : { y: 0, scale: 1 }}
+          transition={{ duration: 0.45 }}
+          className={state.voted ? "text-brand-300" : ""}
+        >
+          ▲
+        </motion.span>
+        <RollingNumber value={state.count} />
+        <AnimatePresence>
+          {state.voted && (
+            <motion.span
+              key="ring"
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-xl border border-brand-300"
+              initial={{ opacity: 0.8, scale: 1 }}
+              animate={{ opacity: 0, scale: 1.35 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.button>
+      {error && <span className="mt-1 text-xs text-rose-300">{error}</span>}
     </span>
+  );
+}
+
+const BURST = Array.from({ length: 8 }, (_, index) => (index / 8) * Math.PI * 2);
+
+/** Favori : l'étoile se remplit avec une petite gerbe de particules. */
+export function BookmarkButton({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      whileTap={{ scale: 0.9 }}
+      className="relative inline-flex items-center gap-2 rounded-xl border border-line bg-panel-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5 aria-pressed:border-ocre-400/50 aria-pressed:text-ocre-300"
+    >
+      <span className="relative" aria-hidden>
+        <motion.span className="inline-block" animate={active ? { rotate: [0, -20, 0], scale: [1, 1.4, 1] } : {}} transition={{ duration: 0.5 }}>
+          {active ? "★" : "☆"}
+        </motion.span>
+        <AnimatePresence>
+          {active &&
+            BURST.map((angle) => (
+              <motion.span
+                key={angle}
+                className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-ocre-300"
+                initial={{ x: 0, y: 0, opacity: 1 }}
+                animate={{ x: Math.cos(angle) * 16, y: Math.sin(angle) * 16, opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+              />
+            ))}
+        </AnimatePresence>
+      </span>
+      {active ? "Enregistrée" : "Enregistrer"}
+    </motion.button>
   );
 }
 
@@ -76,13 +137,13 @@ export function ReportButton({ targetType, targetId }: { targetType: string; tar
   return (
     <div>
       {!open && (
-        <button type="button" onClick={() => { setOpen(true); setResult(null); }} className="text-xs text-muted hover:text-red-700 hover:underline">
+        <button type="button" onClick={() => { setOpen(true); setResult(null); }} className="text-xs text-muted hover:text-rose-300 hover:underline">
           Signaler
         </button>
       )}
       {result && <Alert kind={result.kind}>{result.text}</Alert>}
       {open && (
-        <div className="mt-2 rounded-lg border border-line bg-stone-50 p-3">
+        <div className="mt-2 rounded-xl border border-line bg-panel-2 p-3">
           <Select label="Motif" options={REASONS} value={reason} onChange={(e) => setReason(e.target.value)} />
           <Textarea label="Précisions" value={details} onChange={(e) => setDetails(e.target.value)} rows={2} hint={reason === "OTHER" ? "Obligatoire pour « Autre motif »." : "Facultatif."} />
           <div className="flex gap-2">

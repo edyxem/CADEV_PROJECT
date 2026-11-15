@@ -37,10 +37,10 @@ function RequestsContent() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle title="Demandes pour rejoindre" subtitle="Visibles uniquement du propriétaire et des responsables habilités." action={<Link href={`/projets/${slug}`} className="text-sm text-brand-700 underline">Retour au projet</Link>} />
+      <PageTitle title="Demandes pour rejoindre" subtitle="Visibles uniquement du propriétaire et des responsables habilités." action={<Link href={`/projets/${slug}`} className="text-sm text-brand-300 underline">Retour au projet</Link>} />
       <div className="mb-4 flex gap-2 text-sm">
         {[["PENDING", "En attente"], ["", "Toutes"]].map(([value, text]) => (
-          <button key={value} type="button" onClick={() => setFilter(value)} aria-pressed={filter === value} className="rounded-full border border-line px-3 py-1 aria-pressed:border-brand-600 aria-pressed:bg-brand-50">
+          <button key={value} type="button" onClick={() => setFilter(value)} aria-pressed={filter === value} className="rounded-full border border-line px-3 py-1 aria-pressed:border-brand-400/60 aria-pressed:bg-brand-50">
             {text}
           </button>
         ))}
@@ -62,7 +62,7 @@ function RequestsContent() {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <label className="text-sm">
                   <span className="sr-only">Rôle attribué</span>
-                  <select className="rounded-lg border border-line px-2 py-2 text-sm" value={roles[request.id] ?? "CONTRIBUTOR"} onChange={(e) => setRoles({ ...roles, [request.id]: e.target.value })}>
+                  <select className="rounded-xl border border-line px-2 py-2 text-sm" value={roles[request.id] ?? "CONTRIBUTOR"} onChange={(e) => setRoles({ ...roles, [request.id]: e.target.value })}>
                     <option value="CONTRIBUTOR">Contributeur</option>
                     <option value="OBSERVER">Observateur</option>
                     <option value="MANAGER">Responsable</option>

@@ -75,11 +75,11 @@ function NewProjectForm() {
           </div>
           <fieldset className="mb-4">
             <legend className="text-sm font-medium">Technologies</legend>
-            <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-lg border border-line bg-white p-2">
+            <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-xl border border-line bg-panel p-2">
               {technologies.map((technology) => {
                 const checked = selected.includes(technology.slug);
                 return (
-                  <label key={technology.id} className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-line"}`}>
+                  <label key={technology.id} className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs ${checked ? "border-brand-400/60 bg-brand-50 text-brand-800" : "border-line"}`}>
                     <input type="checkbox" className="sr-only" checked={checked} onChange={() => setSelected((previous) => (checked ? previous.filter((s) => s !== technology.slug) : [...previous, technology.slug].slice(0, 12)))} />
                     {technology.name}
                   </label>

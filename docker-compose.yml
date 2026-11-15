@@ -44,6 +44,16 @@ services:
     ports:
       - "${BACKEND_PORT:-8000}:8000"
 
+  frontend:
+    build:
+      context: frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000/api/v1}
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
 volumes:
   postgres_data:
   media_data:

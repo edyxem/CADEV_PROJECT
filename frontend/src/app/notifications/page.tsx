@@ -48,7 +48,7 @@ function NotificationsContent() {
       {list.data?.count === 0 && <EmptyState title="Rien de nouveau">Les réponses, demandes et tâches qui vous concernent apparaîtront ici.</EmptyState>}
       <div className="space-y-2">
         {list.data?.results.map((notification) => (
-          <Card key={notification.id} className={notification.is_read ? "opacity-70" : "border-brand-600"}>
+          <Card key={notification.id} className={notification.is_read ? "opacity-70" : "border-brand-400/60"}>
             <button type="button" onClick={() => open(notification)} className="w-full text-left">
               <p className="font-medium">{!notification.is_read && <span className="mr-2 inline-block h-2 w-2 rounded-full bg-accent-500" aria-label="Non lue" />}{notification.title}</p>
               {notification.message && <p className="mt-1 text-sm text-muted">{notification.message}</p>}

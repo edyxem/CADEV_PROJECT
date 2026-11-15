@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "motion/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -6,34 +9,53 @@ import type { ApiError } from "@/lib/api/client";
 type Kind = "info" | "success" | "error";
 
 const KINDS: Record<Kind, string> = {
-  info: "border-sky-200 bg-sky-50 text-sky-900",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  error: "border-red-200 bg-red-50 text-red-900",
+  info: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+  success: "border-brand-400/30 bg-brand-500/10 text-brand-200",
+  error: "border-rose-400/30 bg-rose-500/10 text-rose-100",
 };
 
 export function Alert({ kind = "info", children }: { kind?: Kind; children: ReactNode }) {
   return (
-    <div role={kind === "error" ? "alert" : "status"} className={`mb-4 rounded-lg border px-4 py-3 text-sm ${KINDS[kind]}`}>
+    <motion.div
+      role={kind === "error" ? "alert" : "status"}
+      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className={`mb-4 rounded-xl border px-4 py-3 text-sm ${KINDS[kind]}`}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-export function Loading({ label = "Chargement…" }: { label?: string }) {
+/** Squelettes de chargement : la page garde sa forme pendant l'attente. */
+export function Loading({ label = "Chargement…", rows = 3 }: { label?: string; rows?: number }) {
   return (
-    <div className="flex items-center gap-3 py-8 text-sm text-muted" role="status">
-      <span className="h-5 w-5 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" aria-hidden />
-      {label}
+    <div role="status" aria-live="polite" className="space-y-3 py-2">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: rows }).map((_, index) => (
+        <div key={index} className="rounded-2xl border border-line bg-panel p-5" style={{ opacity: 1 - index * 0.2 }}>
+          <div className="skeleton mb-3 h-4 w-24" />
+          <div className="skeleton mb-2 h-5 w-3/4" />
+          <div className="skeleton h-4 w-1/2" />
+        </div>
+      ))}
     </div>
   );
 }
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-line bg-white px-6 py-10 text-center">
-      <p className="font-medium">{title}</p>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="rounded-2xl border border-dashed border-line bg-panel/60 px-6 py-12 text-center"
+    >
+      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-brand-500/10 text-xl text-brand-300" aria-hidden>
+        ✦
+      </div>
+      <p className="font-display text-lg font-semibold">{title}</p>
       {children && <div className="mt-2 text-sm text-muted">{children}</div>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -45,7 +67,7 @@ export function ErrorState({ error, onRetry }: { error: ApiError; onRetry?: () =
   if (error.status === 401) {
     return (
       <EmptyState title="Connexion requise">
-        <Link href="/connexion" className="text-brand-700 underline">
+        <Link href="/connexion" className="text-brand-300 underline">
           Se connecter
         </Link>{" "}
         pour accéder à cette page.
@@ -59,7 +81,7 @@ export function ErrorState({ error, onRetry }: { error: ApiError; onRetry?: () =
     <Alert kind="error">
       {error.message}{" "}
       {onRetry && (
-        <button type="button" onClick={onRetry} className="font-medium underline">
+        <button type="button" onClick={onRetry} className="font-semibold underline">
           Réessayer
         </button>
       )}

@@ -1,12 +1,12 @@
-# AfriDev Community — Backend
+# AfriDev Community
 
-API REST de la plateforme communautaire et collaborative des développeurs africains
+API REST et interface web de la plateforme communautaire et collaborative des développeurs africains
 (CADEV 2026) : échanger, se connecter, construire.
 
 `DISCUSSION → RENCONTRE → ÉQUIPE → PROJET → RÉALISATION → OPPORTUNITÉ`
 
-Le backend Django est la source de vérité des règles métier ; il est consommé par un frontend
-Next.js séparé. Spécification de référence : [docs/cahier_des_charges.md](docs/cahier_des_charges.md).
+Le backend Django est la source de vérité des règles métier ; il est consommé par le frontend
+Next.js du dossier [`frontend/`](frontend). Spécification de référence : [docs/cahier_des_charges.md](docs/cahier_des_charges.md).
 
 ## Stack
 
@@ -20,6 +20,7 @@ Next.js séparé. Spécification de référence : [docs/cahier_des_charges.md](d
 | Sécurité contenu | nh3 (HTML en liste blanche), Pillow (contrôle et réencodage des images) |
 | Exécution | Gunicorn, WhiteNoise, Docker multi-étapes (utilisateur non-root) |
 | Qualité | pytest, pytest-django, factory_boy, ruff, pre-commit, GitHub Actions |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Motion, Vitest |
 
 Toutes les versions sont figées dans [`requirements/`](requirements).
 
@@ -65,6 +66,7 @@ docker compose up --build -d
 docker compose exec backend python manage.py seed_demo
 ```
 
+- Application web : http://localhost:3000/
 - API : http://localhost:8000/api/v1/
 - Swagger : http://localhost:8000/api/docs/ — ReDoc : http://localhost:8000/api/redoc/
 - Santé : http://localhost:8000/api/v1/health/
@@ -89,6 +91,32 @@ python backend/manage.py seed_demo
 python backend/manage.py runserver
 pre-commit install
 ```
+
+## Frontend
+
+Interface Next.js dans [`frontend/`](frontend), thème sombre « Nuit & Ocre » et animations
+réalisées avec Motion :
+
+- accueil : carte de l'Afrique en matrice de points animée (villes, arcs et particules),
+  titre cinétique, compteurs alimentés par l'API, bandeau de technologies, cartes à halo
+  suivant le curseur, frise du parcours `DISCUSSION → OPPORTUNITÉ` pilotée par le défilement ;
+- transitions de page, apparitions en cascade des listes, en-tête qui se masque au défilement ;
+- micro-interactions : vote, favori, boutons magnétiques, badge de notifications ;
+- tableau des tâches en glisser-déposer, avec mise à jour optimiste et retour arrière si la
+  transition est refusée par l'API ;
+- réglage système « réduire les animations » respecté partout.
+
+```bash
+cd frontend
+cp .env.example .env.local      # NEXT_PUBLIC_API_BASE_URL
+npm ci
+npm run dev                     # http://localhost:3000
+npm run lint && npm run typecheck && npm test && npm run build
+```
+
+Le jeton d'accès reste en mémoire ; la session est restaurée via le cookie de rafraîchissement
+`HttpOnly` émis par l'API. En Docker, l'image est construite en sortie `standalone` et
+s'exécute avec un utilisateur non-root ; `NEXT_PUBLIC_API_BASE_URL` est figée à la construction.
 
 ## Commandes
 
@@ -156,7 +184,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 - Scénario de bout en bout du §12.3 rejoué via l'API :
   [`backend/tests/test_e2e_scenario.py`](backend/tests/test_e2e_scenario.py).
 - CI : ruff, migrations à jour, `check --deploy`, schéma OpenAPI sans avertissement, tests et
-  couverture, construction de l'image Docker.
+  couverture ; frontend (ESLint, TypeScript, Vitest, build) ; construction des deux images Docker.
 
 ## Couverture des exigences
 
@@ -177,7 +205,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 | P0-11 | Espace projet (membres, rôles, dépôt, tâches, statut) | Fait | `projects` |
 | P0-12 | Signalement et traitement | Fait | `moderation` |
 | P0-13 | Administration minimale | Fait | Django Admin + `moderation` |
-| P0-14 | Interface responsive | Hors périmètre backend | frontend |
+| P0-14 | Interface responsive | Fait | `frontend/` |
 
 
 ### P1 — Fonctions importantes

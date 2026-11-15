@@ -30,11 +30,11 @@ export default function HomePage() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {status === "authenticated" ? (
-            <ButtonLink href="/publier" className="bg-white text-brand-800 hover:bg-brand-50">Publier</ButtonLink>
+            <ButtonLink href="/publier" variant="light">Publier</ButtonLink>
           ) : (
-            <ButtonLink href="/inscription" className="bg-white text-brand-800 hover:bg-brand-50">Créer un compte</ButtonLink>
+            <ButtonLink href="/inscription" variant="light">Créer un compte</ButtonLink>
           )}
-          <ButtonLink href="/fil" variant="ghost" className="text-white hover:bg-brand-700">Parcourir le fil</ButtonLink>
+          <ButtonLink href="/fil" variant="onDark">Parcourir le fil</ButtonLink>
         </div>
       </section>
 

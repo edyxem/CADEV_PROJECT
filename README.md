@@ -305,5 +305,4 @@ Choix et limites : [ADR 0006](docs/adr/0006-extensions-p2.md).
 - [Mise en ligne](docs/deploiement.md)
 - [Exploitation : administrateur, sauvegarde, restauration](docs/operations.md)
 - [Composants tiers et licences](docs/licences.md)
-- [Refonte du frontend : notes de travail](docs/refonte_frontend.md)
 - [Décisions d'architecture](docs/adr)

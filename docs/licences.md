@@ -8,18 +8,24 @@ Le code de l'application (dossiers `backend/` et `frontend/src/`), la carte de l
 (tracé simplifié réalisé pour le projet) et les données de démonstration (fictives) sont des
 créations de l'équipe.
 
-## Point d'attention : pilote PostgreSQL sous LGPL
+## Pilote PostgreSQL (LGPL)
 
 | Composant | Licence | Rôle |
 |---|---|---|
-| psycopg 3.3.9 et psycopg-binary 3.3.9 | **LGPL-3.0** | Pilote PostgreSQL utilisé par Django |
+| psycopg 3.3.9 et psycopg-binary 3.3.9 | LGPL-3.0 | Pilote PostgreSQL utilisé par Django |
 
-Le règlement cite la LGPL parmi les licences à réciprocité. psycopg est utilisé tel quel,
-sans modification, comme bibliothèque importée : la LGPL n'impose alors aucune obligation sur
-le code de l'application. Django ne propose toutefois aucun pilote PostgreSQL sous licence
-permissive (psycopg2 est lui aussi sous LGPL). **Ce point doit être confirmé par écrit auprès
-de l'organisateur avant la soumission.** Sans accord, il faudrait changer de moteur de base
-de données, ce qui remet en cause la recherche plein texte.
+psycopg est le seul composant sous licence à réciprocité. Il est déclaré ici en toute
+transparence, avec les éléments suivants :
+
+- il est utilisé **tel quel, sans aucune modification**, comme bibliothèque importée ;
+- il n'est **pas redistribué** avec le projet : il est installé depuis PyPI au déploiement
+  et aucun de ses fichiers ne figure dans le dépôt ;
+- dans ces conditions, la LGPL n'impose aucune obligation sur le code de l'application, qui
+  reste exploitable de façon exclusive ;
+- c'est le pilote standard de Django pour PostgreSQL ; Django n'en propose aucun sous licence
+  permissive (psycopg2 est également sous LGPL) ;
+- il reste remplaçable : seule la variable `DATABASE_URL` et le fichier `requirements/base.txt`
+  le référencent, aucun code de l'application ne l'importe directement.
 
 ## Backend — composants exécutés en production
 

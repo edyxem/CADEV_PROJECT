@@ -253,8 +253,8 @@ CampusSecure), `demo_moderateur` (modérateur), `demo_admin` (administrateur).
 Le code de l'application est une création originale de l'équipe. Les composants tiers
 (Django, Django REST Framework, Next.js, React, Motion, Tailwind CSS, PostgreSQL, etc.) sont
 sous licences permissives (MIT, BSD, Apache 2.0). L'inventaire complet, avec versions et
-licences, figure dans `docs/licences.md`. Un point reste à confirmer avec l'organisateur : le
-pilote PostgreSQL psycopg, sous LGPL, utilisé tel quel et sans modification.
+licences, figure dans `docs/licences.md`. Seul le pilote PostgreSQL psycopg est sous LGPL : il
+est utilisé tel quel, sans modification, et n'est pas redistribué avec le projet.
 
 ## 13. Annexes
 

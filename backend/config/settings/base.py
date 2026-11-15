@@ -5,6 +5,8 @@ from pathlib import Path
 
 import environ
 
+from .admin_theme import JAZZMIN_SETTINGS, JAZZMIN_UI_TWEAKS, LOGIN_REDIRECT_URL  # noqa: F401
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ROOT_DIR = BASE_DIR.parent
 
@@ -16,6 +18,8 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 DJANGO_APPS = [
+    # Thème de l'administration : doit précéder django.contrib.admin.
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -125,7 +129,7 @@ MEDIA_ROOT = Path(env("DJANGO_MEDIA_ROOT", default=str(ROOT_DIR / "media")))
 SERVE_MEDIA = env.bool("DJANGO_SERVE_MEDIA", default=False)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {"BACKEND": "common.storage.StaticStorage"},
 }
 MAX_IMAGE_UPLOAD_BYTES = env.int("MAX_IMAGE_UPLOAD_BYTES", default=2 * 1024 * 1024)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
@@ -144,6 +148,8 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="AfriDev Community <no-reply@afridev.local>")
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+# Le lien « Site » de l'administration ouvre le frontend.
+JAZZMIN_SETTINGS["topmenu_links"][0]["url"] = FRONTEND_URL
 
 # Django REST Framework -----------------------------------------------------
 REST_FRAMEWORK = {

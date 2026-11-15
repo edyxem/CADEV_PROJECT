@@ -399,3 +399,10 @@ class TestDirectoryFilters:
     ):
         with django_assert_max_num_queries(8):
             api_client.get("/api/v1/profiles/")
+
+
+def test_public_profile_exposes_account_id_for_reporting(api_client, user):
+    body = api_client.get(profile_url("awa")).json()
+
+    assert body["user_id"] == str(user.id)
+    assert "email" not in body

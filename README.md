@@ -95,7 +95,7 @@ pre-commit install
 
 ## Frontend
 
-Interface Next.js dans [`frontend/`](frontend), thème sombre « Nuit & Ocre » et animations
+Interface Next.js dans [`frontend/`](frontend), thème clair et sobre (fond blanc, un seul accent vert profond) et animations
 réalisées avec Motion :
 
 - accueil : carte de l'Afrique en matrice de points animée (villes, arcs et particules),

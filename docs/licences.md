@@ -59,7 +59,7 @@ Select2 et XRegExp (MIT) ; Font Awesome Free (icônes CC BY 4.0, polices SIL OFL
 | styled-jsx, client-only, @next/env | — | MIT |
 | @swc/helpers | 0.5.23 | Apache-2.0 |
 | tslib | 2.9.1 | 0BSD |
-| Polices Inter et Space Grotesk | — | SIL Open Font License 1.1 |
+| Police Inter | — | SIL Open Font License 1.1 |
 
 `sharp` (Apache-2.0) et sa bibliothèque `libvips` (LGPL-3.0) sont une dépendance
 **optionnelle** de Next.js pour l'optimisation d'images. L'application ne l'utilise pas :

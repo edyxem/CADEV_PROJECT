@@ -4,6 +4,13 @@ Relevé issu d'une revue de l'interface (32 écrans, ordinateur 1440 px et mobil
 application lancée avec les données de démonstration). À utiliser comme liste de contrôle
 pour la refonte, qui partira d'une maquette de référence.
 
+## État
+
+Première passe faite : thème clair (fond blanc, texte gris foncé, accent vert profond), police
+unique Inter, suppression des halos, dégradés et effets de verre, boutons sobres, menu du
+compte sous l'avatar, pied de page calé en bas. Les points ci-dessous non couverts par cette
+passe restent à traiter (filtres mobiles, pluriels, dates, états vides, données de démo).
+
 ## Cadre de la refonte
 
 - **Ton visé** : professionnel, sobre, élégant ; simple mais vivant. Éviter l'esthétique

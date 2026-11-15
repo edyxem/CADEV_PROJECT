@@ -116,7 +116,7 @@ L'administration Django a été entièrement repensée (thème Jazzmin personnal
 
 ## 6. Expérience utilisateur et design
 
-L'identité « **Nuit & Ocre** » (vert émeraude et ocre sur fond nuit) évoque à la fois la
+L'identité « **Clair & Ocre** » (vert profond et ocre sur fond blanc) évoque à la fois la
 technologie et le continent.
 
 - **Accueil** : carte de l'Afrique en matrice de points ; des villes pulsent et des arcs
@@ -248,7 +248,15 @@ CampusSecure), `demo_moderateur` (modérateur), `demo_admin` (administrateur).
 - **Sécuriser l'accès aux opportunités** : annonces relues, organisations vérifiées.
 - **Valoriser les talents** : une réputation fondée sur des contributions réelles et visibles.
 
-## 12. Annexes
+## 12. Composants tiers et licences
+
+Le code de l'application est une création originale de l'équipe. Les composants tiers
+(Django, Django REST Framework, Next.js, React, Motion, Tailwind CSS, PostgreSQL, etc.) sont
+sous licences permissives (MIT, BSD, Apache 2.0). L'inventaire complet, avec versions et
+licences, figure dans `docs/licences.md`. Un point reste à confirmer avec l'organisateur : le
+pilote PostgreSQL psycopg, sous LGPL, utilisé tel quel et sans modification.
+
+## 13. Annexes
 
 | Document | Contenu |
 |---|---|
@@ -258,7 +266,9 @@ CampusSecure), `demo_moderateur` (modérateur), `demo_admin` (administrateur).
 | `docs/api.md` | Guide d'intégration de l'API |
 | `docs/moderation.md` | Politique et outils de modération |
 | `docs/reputation.md` | Règles de réputation et badges |
-| `docs/operations.md` | Déploiement, sauvegarde, restauration |
+| `docs/deploiement.md` | Mise en ligne |
+| `docs/licences.md` | Composants tiers et licences |
+| `docs/operations.md` | Administrateur, sauvegarde, restauration |
 | `docs/adr/` | Décisions d'architecture |
 
 *Toutes les données de démonstration (personnes, organisations, annonces) sont fictives.*

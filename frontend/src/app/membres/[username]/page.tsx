@@ -61,7 +61,14 @@ export default function MemberPage() {
           {isMe ? (
             <ButtonLink href="/parametres" variant="secondary">Modifier mon profil</ButtonLink>
           ) : (
-            data.user_id && <ReportButton targetType="PROFILE" targetId={data.user_id} />
+            <div className="flex flex-col items-end gap-2">
+              {user && (
+                <ButtonLink href={`/messages?to=${data.username}`} variant="secondary">
+                  Envoyer un message
+                </ButtonLink>
+              )}
+              {data.user_id && <ReportButton targetType="PROFILE" targetId={data.user_id} />}
+            </div>
           )}
         </div>
       </Card>

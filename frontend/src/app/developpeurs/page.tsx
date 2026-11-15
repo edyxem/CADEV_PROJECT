@@ -1,8 +1,8 @@
 "use client";
 
-import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { useState, type FormEvent } from "react";
 
+import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { ProfileCard } from "@/components/profiles/ProfileCard";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/Feedback";
 import { Select } from "@/components/ui/Field";

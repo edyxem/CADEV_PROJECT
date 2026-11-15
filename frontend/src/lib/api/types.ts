@@ -235,3 +235,126 @@ export interface ModerationReport {
   open_reports_on_target: number;
   created_at: string;
 }
+
+// --- Extensions P1 / P2 ------------------------------------------------------
+
+export interface Dashboard {
+  reputation: number;
+  achievements: number;
+  posts: number;
+  drafts: number;
+  answers: number;
+  accepted_answers: number;
+  bookmarks: number;
+  unread_notifications: number;
+  projects: number;
+  open_tasks: number;
+  join_requests_to_review: number;
+  pending_join_requests: number;
+  followers: number;
+  following: number;
+}
+
+export interface Opportunity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  organization: { name: string; slug: string; is_verified: boolean } | null;
+  organization_label: string;
+  is_verified_partner: boolean;
+  publisher: Author;
+  country: Country | null;
+  location: string;
+  work_mode: string;
+  level: string;
+  technologies: Ref[];
+  deadline: string | null;
+  is_expired: boolean;
+  application_url: string;
+  contact_email: string;
+  source_url: string;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+}
+
+export interface EventItem {
+  id: string;
+  title: string;
+  description: string;
+  kind: string;
+  format: string;
+  starts_at: string;
+  ends_at: string;
+  location: string;
+  online_url: string;
+  capacity: number | null;
+  registered_count: number;
+  is_registered: boolean;
+  is_past: boolean;
+  organizer: Author;
+  community: string | null;
+  category: Ref | null;
+  technologies: Ref[];
+  status: string;
+  created_at: string;
+}
+
+export interface CommunityItem {
+  id: string;
+  name: string;
+  slug: string;
+  kind: string;
+  description: string;
+  rules: string;
+  country: Country | null;
+  city: string;
+  technology: Ref | null;
+  category: Ref | null;
+  member_count: number;
+  my_role: string | null;
+  created_at: string;
+}
+
+export interface Mentor {
+  id: string;
+  user: Author;
+  headline: string;
+  bio: string;
+  domains: Ref[];
+  technologies: Ref[];
+  languages: string[];
+  is_available: boolean;
+  max_active_mentees: number;
+  active_mentees: number;
+}
+
+export interface MentorshipRequest {
+  id: string;
+  mentee: Author;
+  mentor: Author;
+  goal: string;
+  status: string;
+  response_message: string;
+  responded_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  sender: Author;
+  content: string;
+  is_hidden: boolean;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  other: Author;
+  last_message: Message | null;
+  unread_count: number;
+  last_message_at: string | null;
+  created_at: string;
+}

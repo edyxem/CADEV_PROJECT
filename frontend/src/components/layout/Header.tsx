@@ -17,6 +17,13 @@ const NAV = [
   { href: "/projets", label: "Projets" },
 ];
 
+const EXPLORE = [
+  { href: "/opportunites", label: "Opportunités", text: "Emplois, stages, bourses, hackathons" },
+  { href: "/evenements", label: "Événements", text: "Meetups, ateliers, webinaires" },
+  { href: "/communautes", label: "Communautés", text: "Pays, villes, universités, technos" },
+  { href: "/mentorat", label: "Mentorat", text: "Être accompagné ou accompagner" },
+];
+
 const POLL_MS = 60_000;
 
 export function Header() {
@@ -26,6 +33,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [explore, setExplore] = useState(false);
+  const exploreActive = EXPLORE.some((item) => pathname.startsWith(item.href));
   const { scrollY } = useScroll();
 
   // L'en-tête se retire au défilement vers le bas et revient dès qu'on remonte.
@@ -91,6 +100,43 @@ export function Header() {
               </Link>
             );
           })}
+          <div className="relative" onMouseEnter={() => setExplore(true)} onMouseLeave={() => setExplore(false)}>
+            <button
+              type="button"
+              aria-expanded={explore}
+              aria-haspopup="true"
+              onClick={() => setExplore((value) => !value)}
+              className={`relative flex items-center gap-1 rounded-xl px-3.5 py-2 text-sm transition-colors ${exploreActive ? "text-ink" : "text-muted hover:text-ink"}`}
+            >
+              {exploreActive && <motion.span layoutId="nav-active" className="absolute inset-0 -z-10 rounded-xl border border-line bg-panel-2" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
+              Explorer
+              <motion.span animate={{ rotate: explore ? 180 : 0 }} className="text-[10px]" aria-hidden>
+                ▼
+              </motion.span>
+            </button>
+            <AnimatePresence>
+              {explore && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  transition={{ duration: 0.18 }}
+                  className="absolute left-1/2 top-full w-72 -translate-x-1/2 pt-2"
+                >
+                  <div className="glass rounded-2xl border border-line p-2 shadow-2xl" onClick={() => setExplore(false)}>
+                    {EXPLORE.map((item, index) => (
+                      <motion.div key={item.href} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.03 * index }}>
+                        <Link href={item.href} className="group block rounded-xl px-3 py-2.5 hover:bg-white/5">
+                          <span className="text-sm font-medium group-hover:text-brand-200">{item.label}</span>
+                          <span className="block text-xs text-muted">{item.text}</span>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </nav>
 
         <div className="flex items-center gap-1.5">
@@ -98,6 +144,11 @@ export function Header() {
             <>
               <Link href="/publier" className="btn-primary hidden px-3.5 py-2 text-sm sm:inline-flex">
                 + Publier
+              </Link>
+              <Link href="/messages" className="grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-white/5 hover:text-ink" aria-label="Messages" title="Messages">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
               </Link>
               <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-muted transition-colors hover:bg-white/5 hover:text-ink" aria-label={`Notifications (${unread} non lues)`}>
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
@@ -165,10 +216,18 @@ export function Header() {
                 </Link>
               </motion.div>
             ))}
+            <p className="px-3 pb-1 pt-3 text-[11px] uppercase tracking-wider text-muted">Explorer</p>
+            {EXPLORE.map((item) => (
+              <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-3 text-sm hover:bg-white/5">
+                {item.label}
+              </Link>
+            ))}
             <div className="my-2 h-px bg-line" />
             {status === "authenticated" && user ? (
               <>
                 <Link href="/publier" className="block rounded-xl px-3 py-3 text-sm font-semibold text-brand-300">+ Publier</Link>
+                <Link href="/tableau-de-bord" className="block rounded-xl px-3 py-3 text-sm">Tableau de bord</Link>
+                <Link href="/messages" className="block rounded-xl px-3 py-3 text-sm">Messages</Link>
                 <Link href="/notifications" className="block rounded-xl px-3 py-3 text-sm">Notifications {unread > 0 ? `(${unread})` : ""}</Link>
                 <Link href={`/membres/${user.username}`} className="block rounded-xl px-3 py-3 text-sm">Mon profil public</Link>
                 <Link href="/parametres" className="block rounded-xl px-3 py-3 text-sm">Paramètres du profil</Link>
@@ -185,6 +244,7 @@ export function Header() {
 
       {status === "authenticated" && (
         <div className="mx-auto mt-1 hidden max-w-6xl justify-end gap-4 px-4 text-xs text-muted md:flex">
+          <Link href="/tableau-de-bord" className="hover:text-ink">Tableau de bord</Link>
           <Link href="/parametres" className="hover:text-ink">Paramètres du profil</Link>
           <button type="button" onClick={handleLogout} className="hover:text-ink">Se déconnecter</button>
         </div>

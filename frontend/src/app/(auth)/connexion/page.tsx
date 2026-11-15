@@ -45,6 +45,11 @@ function LoginForm() {
       <form onSubmit={onSubmit} noValidate>
         <Input label="E-mail ou nom d'utilisateur" value={identifier} onChange={(e) => setIdentifier(e.target.value)} autoComplete="username" required />
         <Input label="Mot de passe" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+        <p className="-mt-2 mb-4 text-right text-xs">
+          <Link href="/mot-de-passe-oublie" className="text-muted underline hover:text-ink">
+            Mot de passe oublié ?
+          </Link>
+        </p>
         <Button type="submit" loading={submitting} className="w-full">Se connecter</Button>
       </form>
       <p className="mt-4 text-center text-sm text-muted">

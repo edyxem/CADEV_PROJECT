@@ -77,3 +77,51 @@ export function formatDate(value: string | null | undefined): string {
 export function label(map: Record<string, string>, value: string | null | undefined): string {
   return value ? (map[value] ?? value) : "";
 }
+
+export const WORK_MODES: Record<string, string> = { REMOTE: "À distance", HYBRID: "Hybride", ONSITE: "Présentiel" };
+
+export const OPPORTUNITY_TYPES: Record<string, string> = {
+  JOB: "Emploi",
+  INTERNSHIP: "Stage",
+  FREELANCE: "Mission freelance",
+  SCHOLARSHIP: "Bourse",
+  HACKATHON: "Hackathon",
+  INCUBATION: "Programme d'incubation",
+  TRAINING: "Formation ou certification",
+  CALL_FOR_PROJECTS: "Appel à projets",
+};
+
+export const EVENT_KINDS: Record<string, string> = {
+  MEETUP: "Meetup",
+  WORKSHOP: "Atelier",
+  CONFERENCE: "Conférence",
+  WEBINAR: "Webinaire",
+  COMPETITION: "Compétition",
+  HACKATHON: "Hackathon",
+  GROUP_MENTORING: "Mentorat collectif",
+};
+
+export const EVENT_FORMATS: Record<string, string> = { ONLINE: "En ligne", ONSITE: "Présentiel", HYBRID: "Hybride" };
+
+export const COMMUNITY_KINDS: Record<string, string> = {
+  COUNTRY: "Pays",
+  CITY: "Ville",
+  UNIVERSITY: "Université",
+  TECHNOLOGY: "Technologie",
+  DOMAIN: "Domaine",
+};
+
+export const MENTORSHIP_STATUS: Record<string, string> = {
+  PENDING: "En attente",
+  ACCEPTED: "Acceptée",
+  DECLINED: "Déclinée",
+  CANCELLED: "Annulée",
+  COMPLETED: "Terminée",
+};
+
+const dayFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
+
+/** Date seule (ex. date limite d'une opportunité, au format AAAA-MM-JJ). */
+export function formatDay(value: string | null | undefined): string {
+  return value ? dayFormatter.format(new Date(value.length === 10 ? `${value}T12:00:00` : value)) : "";
+}

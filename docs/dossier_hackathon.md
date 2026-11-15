@@ -29,7 +29,7 @@ mentorat et à des événements.
 
 Le livrable comprend :
 
-- une **API REST** Django complète, testée (500 tests, 97 % de couverture) et documentée (OpenAPI) ;
+- une **API REST** Django complète, testée (503 tests, 97 % de couverture) et documentée (OpenAPI) ;
 - une **application web** Next.js animée, responsive et accessible (32 écrans) ;
 - une **administration** sur mesure, avec indicateurs en direct et outils de modération ;
 - un **environnement de démonstration** reproductible (Docker, comptes et données fictives).
@@ -56,7 +56,7 @@ Une seule plateforme qui relie quatre besoins habituellement séparés.
 | Besoin | Réponse d'AfriDev Community |
 |---|---|
 | **Échanger** | Fil communautaire, questions/réponses avec réponse acceptée, articles, votes, favoris, recherche plein texte en français |
-| **Se connecter** | Profils développeurs, annuaire filtrable (technologie, pays, niveau, disponibilité), abonnements, recommandations, messagerie privée, communautés par pays/ville/université/technologie |
+| **Se connecter** | Profils développeurs avec photo, annuaire filtrable (technologie, pays, niveau, disponibilité), abonnements, recommandations, messagerie privée, communautés par pays/ville/université/technologie |
 | **Construire** | Appels à collaboration, rôles recherchés, demandes pour rejoindre, espace projet, tableau de tâches en glisser-déposer, jalons et activité |
 | **Progresser** | Opportunités vérifiées, mentorat, événements, réputation et badges fondés sur des contributions réelles |
 
@@ -95,7 +95,7 @@ le **P1** et l'ensemble du **P2**.
 | Domaine | Écrans |
 |---|---|
 | Accueil | Héro animé (carte de l'Afrique), statistiques en direct, discussions et projets récents |
-| Compte | Inscription, connexion, mot de passe oublié, réinitialisation, vérification et changement d'adresse e-mail |
+| Compte | Inscription avec photo de profil, connexion, mot de passe oublié, réinitialisation, vérification et changement d'adresse e-mail |
 | Communauté | Fil, questions, publication, détail avec commentaires/réponses, votes, favoris, signalement |
 | Réseau | Annuaire des développeurs, profil public, paramètres du profil et des compétences, messagerie |
 | Projets | Liste et recherche, création, page projet, rôles recherchés, demandes, tableau de tâches |
@@ -183,7 +183,7 @@ fines. Les décisions structurantes sont documentées dans `docs/adr/`.
 
 **Qualité**
 
-- **500 tests backend**, couverture **97 %** (seuil imposé en CI : 85 %) ; 13 tests frontend.
+- **503 tests backend**, couverture **97 %** (seuil imposé en CI : 85 %) ; 16 tests frontend.
 - Scénarios de bout en bout rejoués via l'API, permissions testées rôle par rôle.
 - Intégration continue : lint, migrations, contrôle de déploiement, schéma OpenAPI, tests,
   build du frontend et construction des deux images Docker.

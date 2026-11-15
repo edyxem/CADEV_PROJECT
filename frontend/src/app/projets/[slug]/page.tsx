@@ -145,26 +145,26 @@ export default function ProjectPage() {
           {data.technologies.map((technology) => <Badge key={technology.id}>{technology.name}</Badge>)}
         </div>
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
-          {data.repository_url && <a href={data.repository_url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 underline">Dépôt</a>}
-          {data.demo_url && <a href={data.demo_url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 underline">Démonstration</a>}
+          {data.repository_url && <a href={data.repository_url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-300 underline">Dépôt</a>}
+          {data.demo_url && <a href={data.demo_url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-300 underline">Démonstration</a>}
           {data.expected_availability && <span className="text-muted">Disponibilité attendue : {data.expected_availability}</span>}
         </div>
         <div className="mt-4 text-xs text-muted">
           Avancement : {Object.entries(TASK_STATUS).map(([key, text]) => `${text} ${data.task_stats[key] ?? 0}`).join(" · ")}
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-          {data.permissions.view_tasks && <Link href={`/projets/${data.slug}/taches`} className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white">Tâches du projet</Link>}
-          {data.permissions.manage_members && <Link href={`/projets/${data.slug}/demandes`} className="rounded-lg border border-line px-3 py-2 text-sm">Demandes reçues</Link>}
+          {data.permissions.view_tasks && <Link href={`/projets/${data.slug}/taches`} className="btn-primary rounded-xl px-4 py-2.5 text-sm">Tâches du projet</Link>}
+          {data.permissions.manage_members && <Link href={`/projets/${data.slug}/demandes`} className="rounded-xl border border-line px-3 py-2 text-sm">Demandes reçues</Link>}
           {data.permissions.edit_settings && (
             <label className="text-sm">
               <span className="mr-2 text-muted">Statut</span>
-              <select className="rounded-lg border border-line px-2 py-1.5 text-sm" value="" onChange={(e) => e.target.value && changeStatus(e.target.value)}>
+              <select className="rounded-xl border border-line px-2 py-1.5 text-sm" value="" onChange={(e) => e.target.value && changeStatus(e.target.value)}>
                 <option value="">Changer…</option>
                 {(NEXT_STATUSES[data.status] ?? []).map((value) => <option key={value} value={value}>{label(PROJECT_STATUS, value)}</option>)}
               </select>
             </label>
           )}
-          {data.my_role && data.my_role !== "OWNER" && <Button type="button" variant="ghost" className="text-red-700" onClick={leave}>Quitter le projet</Button>}
+          {data.my_role && data.my_role !== "OWNER" && <Button type="button" variant="ghost" className="text-rose-300" onClick={leave}>Quitter le projet</Button>}
           {!data.my_role && <span className="ml-auto"><ReportButton targetType="PROJECT" targetId={data.id} /></span>}
         </div>
       </Card>
@@ -174,7 +174,7 @@ export default function ProjectPage() {
         {data.role_needs.length === 0 && <p className="text-sm text-muted">Aucun rôle précis pour le moment.</p>}
         <ul className="space-y-2">
           {data.role_needs.map((need) => (
-            <li key={need.id} className="rounded-lg border border-line px-3 py-2 text-sm">
+            <li key={need.id} className="rounded-xl border border-line px-3 py-2 text-sm">
               <span className="font-medium">{need.role_name}</span> · {need.slots} place(s) {need.is_open ? <Badge tone="brand">Ouvert</Badge> : <Badge>Pourvu</Badge>}
               {need.description && <p className="text-muted">{need.description}</p>}
             </li>
@@ -199,7 +199,7 @@ export default function ProjectPage() {
         <Card>
           <h2 className="mb-3 font-semibold">Rejoindre l'équipe</h2>
           {status !== "authenticated" ? (
-            <p className="text-sm text-muted"><Link href={`/connexion?next=/projets/${data.slug}`} className="text-brand-700 underline">Connectez-vous</Link> pour envoyer une demande.</p>
+            <p className="text-sm text-muted"><Link href={`/connexion?next=/projets/${data.slug}`} className="text-brand-300 underline">Connectez-vous</Link> pour envoyer une demande.</p>
           ) : pending ? (
             <Alert>
               Votre demande est en attente de réponse.{" "}

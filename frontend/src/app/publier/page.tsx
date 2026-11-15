@@ -78,11 +78,11 @@ function PublishForm() {
           )}
           <fieldset className="mb-4">
             <legend className="text-sm font-medium">Technologies (8 au maximum)</legend>
-            <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-lg border border-line bg-white p-2">
+            <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-xl border border-line bg-panel p-2">
               {technologies.map((technology) => {
                 const checked = selected.includes(technology.slug);
                 return (
-                  <label key={technology.id} className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs ${checked ? "border-brand-600 bg-brand-50 text-brand-800" : "border-line"}`}>
+                  <label key={technology.id} className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs ${checked ? "border-brand-400/60 bg-brand-50 text-brand-800" : "border-line"}`}>
                     <input
                       type="checkbox"
                       className="sr-only"
@@ -94,7 +94,7 @@ function PublishForm() {
                 );
               })}
             </div>
-            {error?.field("technologies") && <p className="mt-1 text-xs text-red-700">{error.field("technologies")}</p>}
+            {error?.field("technologies") && <p className="mt-1 text-xs text-rose-300">{error.field("technologies")}</p>}
           </fieldset>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={submitting === "PUBLISHED"} disabled={submitting !== null}>Publier</Button>

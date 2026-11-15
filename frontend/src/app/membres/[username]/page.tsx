@@ -74,7 +74,7 @@ export default function MemberPage() {
             {data.skills?.length ? (
               <ul className="grid gap-2 sm:grid-cols-2">
                 {data.skills.map((skill) => (
-                  <li key={skill.id} className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm">
+                  <li key={skill.id} className="flex items-center justify-between rounded-xl border border-line px-3 py-2 text-sm">
                     <span>
                       <span className="font-medium">{skill.technology.name}</span> · {label(LEVELS, skill.level)}
                       {skill.years_experience ? ` · ${skill.years_experience} an(s)` : ""}
@@ -89,7 +89,7 @@ export default function MemberPage() {
             {data.links && data.links.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-3 text-sm">
                 {data.links.map((link) => (
-                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 underline">
+                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-300 underline">
                     {link.platform.toLowerCase()}
                   </a>
                 ))}
@@ -122,7 +122,7 @@ export default function MemberPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               {projects.data?.results.map((project) => <ProjectCard key={project.id} project={project} />)}
             </div>
-            <p className="mt-3 text-sm"><Link href="/projets" className="text-brand-700 underline">Découvrir d'autres projets</Link></p>
+            <p className="mt-3 text-sm"><Link href="/projets" className="text-brand-300 underline">Découvrir d'autres projets</Link></p>
           </section>
         </>
       )}

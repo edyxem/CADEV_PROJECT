@@ -51,7 +51,7 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: () =
         <span className="ml-auto text-xs text-muted">{formatDate(report.created_at)} · par {report.reporter}</span>
       </div>
       {report.target ? (
-        <div className="mt-3 rounded-lg bg-stone-50 p-3 text-sm">
+        <div className="mt-3 rounded-lg bg-panel-2 p-3 text-sm">
           <p className="font-medium">
             {report.target.url ? <Link href={report.target.url} className="underline">{report.target.title}</Link> : report.target.title}
           </p>

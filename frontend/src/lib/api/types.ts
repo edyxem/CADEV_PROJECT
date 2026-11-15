@@ -105,6 +105,7 @@ export interface Skill {
 }
 
 export interface Profile {
+  user_id?: string;
   username: string;
   display_name: string;
   headline?: string;

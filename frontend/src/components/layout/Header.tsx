@@ -27,7 +27,7 @@ const EXPLORE = [
 const POLL_MS = 60_000;
 
 export function Header() {
-  const { user, status, isModerator, logout } = useAuth();
+  const { user, status, isModerator, avatar, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -169,7 +169,7 @@ export function Header() {
                 </AnimatePresence>
               </Link>
               <Link href={`/membres/${user.username}`} className="hidden rounded-xl p-1 transition-colors hover:bg-white/5 sm:block" title="Mon profil public">
-                <Avatar author={{ display_name: user.first_name || user.username, avatar: null }} size={32} />
+                <Avatar author={{ display_name: user.first_name || user.username, avatar }} size={32} />
               </Link>
             </>
           ) : status === "anonymous" ? (

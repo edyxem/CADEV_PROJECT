@@ -107,8 +107,9 @@ réalisées avec Motion :
   transition est refusée par l'API ;
 - tous les parcours du produit : fil, questions, publication, profils et annuaire, projets
   (demandes, tâches), opportunités, événements, communautés, mentorat, messagerie privée,
-  notifications, modération, tableau de bord personnel avec recommandations, mot de passe
-  oublié et vérification d'adresse e-mail ;
+  notifications, modération, tableau de bord personnel avec recommandations, photo de profil
+  (dès l'inscription, aperçu et contrôle du fichier avant envoi), mot de passe oublié et
+  vérification d'adresse e-mail ;
 - réglage système « réduire les animations » respecté partout.
 
 ```bash
@@ -196,7 +197,7 @@ membres et attribution d'une tâche. Ce parcours est vérifié par
 
 ## Qualité
 
-- 500 tests backend, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
+- 503 tests backend, couverture **97 %** (`apps/` + `common/`, seuil CI : 85 %).
 - Permissions testées par rôle (anonyme, membre, auteur, autre membre, rôles projet,
   modérateur, administrateur), IDOR, non-fuite des champs privés, transitions interdites,
   limites de débit.

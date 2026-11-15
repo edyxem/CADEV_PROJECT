@@ -87,6 +87,7 @@ Légende : ✅ disponible · 🟡 disponible via l'administration ou l'API seule
 | Fonction | Site web | Remarque |
 |---|---|---|
 | Inscription, connexion, déconnexion | ✅ | Connexion par e-mail ou nom d'utilisateur |
+| Photo de profil (dès l'inscription ou plus tard) | ✅ | JPEG, PNG ou WebP, 2 Mo maximum ; recadrée et optimisée automatiquement |
 | Mot de passe oublié et réinitialisation | ✅ | Lien envoyé par e-mail |
 | Vérification et changement d'adresse e-mail | ✅ | Lien envoyé par e-mail |
 | Profil développeur : titre, bio, pays, ville, niveau, disponibilité | ✅ | Page « Paramètres du profil » |
@@ -155,6 +156,8 @@ Légende : ✅ disponible · 🟡 disponible via l'administration ou l'API seule
 
 1. Cliquez sur **Rejoindre** en haut à droite.
 2. Choisissez un nom d'utilisateur, saisissez votre e-mail et un mot de passe solide.
+   Vous pouvez aussi ajouter tout de suite une **photo de profil** (facultative) : cliquez sur
+   le cercle en haut du formulaire ou glissez-y une image.
 3. Vous êtes connecté automatiquement. Pour revenir plus tard : **Connexion**, puis votre
    e-mail **ou** votre nom d'utilisateur.
 
@@ -178,9 +181,13 @@ Cliquez sur **Renvoyer le lien**, puis ouvrez le lien reçu.
 ### 3.4 Compléter mon profil
 
 1. Cliquez sur **Paramètres du profil**.
-2. Renseignez votre nom d'affichage, titre, biographie, pays, ville, niveau et disponibilité.
-3. Choisissez la **visibilité** : *Public* (visible dans l'annuaire) ou *Privé*.
-4. Ajoutez vos **compétences** : une technologie et un niveau, puis **Ajouter**.
+2. **Photo de profil** : cliquez sur la photo (ou glissez une image dessus) pour l'ajouter ou
+   la changer ; **Supprimer la photo** pour revenir aux initiales. Formats acceptés : JPEG,
+   PNG ou WebP, 2 Mo maximum. L'image est recadrée et optimisée automatiquement, et apparaît
+   aussitôt dans la barre de navigation.
+3. Renseignez votre nom d'affichage, titre, biographie, pays, ville, niveau et disponibilité.
+4. Choisissez la **visibilité** : *Public* (visible dans l'annuaire) ou *Privé*.
+5. Ajoutez vos **compétences** : une technologie et un niveau, puis **Ajouter**.
 
 Votre profil public est accessible en cliquant sur votre avatar.
 
@@ -453,6 +460,7 @@ La liste complète est dans `.env.example`.
 |---|---|
 | Le site affiche une erreur de connexion à l'API | Vérifiez que Docker Desktop tourne, puis `docker compose ps` : les trois services doivent être *running*. Relancez avec `docker compose up -d`. |
 | Port déjà utilisé | Changez `FRONTEND_PORT`, `BACKEND_PORT` ou `POSTGRES_HOST_PORT` dans `.env`. |
+| Ma photo est refusée | Seuls les formats JPEG, PNG et WebP de 2 Mo au maximum sont acceptés : réduisez ou convertissez l'image. |
 | Je ne reçois pas l'e-mail de réinitialisation | En local, les e-mails sont écrits dans les journaux : `docker compose logs backend`, puis cherchez le lien `http://localhost:3000/reinitialiser-mot-de-passe?...`. |
 | « Ce lien est invalide ou a expiré » | Les liens sont à usage unique et limités dans le temps : demandez-en un nouveau. |
 | Je suis déconnecté après un moment | Normal après plusieurs jours d'inactivité : reconnectez-vous. |

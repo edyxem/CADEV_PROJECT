@@ -1,5 +1,6 @@
 "use client";
 
+import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { useState, type FormEvent } from "react";
 
 import { ProfileCard } from "@/components/profiles/ProfileCard";
@@ -40,8 +41,8 @@ export default function DirectoryPage() {
       <PageTitle title="Développeurs" subtitle="Trouvez des pairs et des collaborateurs. Les compétences sont déclarées par les membres." />
       <form onSubmit={onSearch} className="mb-4 flex gap-2" role="search">
         <label htmlFor="people-search" className="sr-only">Rechercher un membre</label>
-        <input id="people-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nom, titre, biographie…" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm" />
-        <button type="submit" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white">Rechercher</button>
+        <input id="people-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nom, titre, biographie…" className="w-full rounded-xl border border-line bg-panel px-3 py-2 text-sm" />
+        <button type="submit" className="btn-primary rounded-xl px-5 py-2.5 text-sm">Rechercher</button>
       </form>
       <div className="grid gap-x-3 sm:grid-cols-2 lg:grid-cols-4">
         <Select label="Technologie" options={toOptions(technologies, "Toutes")} value={filters.technology} onChange={update("technology")} />
@@ -52,9 +53,13 @@ export default function DirectoryPage() {
       {result.loading && !result.data && <Loading />}
       {result.error && <ErrorState error={result.error} onRetry={result.reload} />}
       {result.data?.count === 0 && <EmptyState title="Aucun profil ne correspond">Élargissez les filtres.</EmptyState>}
-      <div className={`grid gap-3 sm:grid-cols-2 ${result.loading ? "opacity-60" : ""}`}>
-        {result.data?.results.map((profile) => <ProfileCard key={profile.username} profile={profile} />)}
-      </div>
+      <Stagger key={JSON.stringify([filters, q, page, result.data?.count])} className={`grid gap-3 sm:grid-cols-2 transition-opacity ${result.loading ? "opacity-60" : ""}`}>
+        {result.data?.results.map((profile) => (
+          <StaggerItem key={profile.username}>
+            <ProfileCard profile={profile} />
+          </StaggerItem>
+        ))}
+      </Stagger>
       {result.data && <Pagination page={page} count={result.data.count} onChange={setPage} />}
     </div>
   );

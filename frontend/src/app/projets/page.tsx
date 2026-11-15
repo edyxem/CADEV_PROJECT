@@ -1,5 +1,6 @@
 "use client";
 
+import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { useState, type FormEvent } from "react";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -42,8 +43,8 @@ export default function ProjectsPage() {
       />
       <form onSubmit={onSearch} className="mb-4 flex gap-2" role="search">
         <label htmlFor="project-search" className="sr-only">Rechercher un projet</label>
-        <input id="project-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nom, objectif, domaine…" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm" />
-        <button type="submit" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white">Rechercher</button>
+        <input id="project-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nom, objectif, domaine…" className="w-full rounded-xl border border-line bg-panel px-3 py-2 text-sm" />
+        <button type="submit" className="btn-primary rounded-xl px-5 py-2.5 text-sm">Rechercher</button>
       </form>
       <div className="grid gap-x-3 sm:grid-cols-3">
         <Select label="Recrutement" options={[{ value: "", label: "Tous" }, { value: "true", label: "Accepte des membres" }, { value: "false", label: "Équipe complète" }]} value={filters.recruiting} onChange={update("recruiting")} />
@@ -53,9 +54,13 @@ export default function ProjectsPage() {
       {result.loading && !result.data && <Loading />}
       {result.error && <ErrorState error={result.error} onRetry={result.reload} />}
       {result.data?.count === 0 && <EmptyState title="Aucun projet trouvé">Soyez le premier à lancer un appel à collaboration.</EmptyState>}
-      <div className={`grid gap-3 sm:grid-cols-2 ${result.loading ? "opacity-60" : ""}`}>
-        {result.data?.results.map((project) => <ProjectCard key={project.id} project={project} />)}
-      </div>
+      <Stagger key={JSON.stringify([filters, q, page, result.data?.count])} className={`grid gap-3 sm:grid-cols-2 transition-opacity ${result.loading ? "opacity-60" : ""}`}>
+        {result.data?.results.map((project) => (
+          <StaggerItem key={project.id}>
+            <ProjectCard project={project} />
+          </StaggerItem>
+        ))}
+      </Stagger>
       {result.data && <Pagination page={page} count={result.data.count} onChange={setPage} />}
     </div>
   );

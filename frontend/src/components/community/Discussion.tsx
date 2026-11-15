@@ -72,7 +72,7 @@ export function Comments({ postId }: { postId: string }) {
               replyTo === comment.id ? (
                 <ReplyForm label="Votre réponse" onSubmit={(html) => add(html, comment.id)} />
               ) : (
-                <button type="button" onClick={() => setReplyTo(comment.id)} className="mt-2 text-xs text-brand-700 hover:underline">Répondre</button>
+                <button type="button" onClick={() => setReplyTo(comment.id)} className="mt-2 text-xs text-brand-300 hover:underline">Répondre</button>
               )
             )}
           </Card>
@@ -135,7 +135,7 @@ export function Answers({ question, onAccepted }: { question: PostDetail; onAcce
       {answers.data?.count === 0 && <EmptyState title="Pas encore de réponse">Partagez votre expérience pour aider l'auteur.</EmptyState>}
       <div className="space-y-3">
         {answers.data?.results.map((answer) => (
-          <Card key={answer.id} className={answer.is_accepted ? "border-brand-600 ring-1 ring-brand-600" : ""}>
+          <Card key={answer.id} className={answer.is_accepted ? "border-brand-400/60 ring-1 ring-brand-400/50" : ""}>
             <div className="flex gap-3">
               <VoteButton path={`/answers/${answer.id}/vote/`} voted={answer.has_voted} count={answer.vote_count} disabled={answer.author.username === user?.username} />
               <div className="min-w-0 flex-1">
@@ -146,7 +146,7 @@ export function Answers({ question, onAccepted }: { question: PostDetail; onAcce
                 <div className="mt-2"><RichText html={answer.content} /></div>
                 <div className="mt-2 flex items-center gap-4">
                   {isAuthor && answer.author.username !== user?.username && (
-                    <button type="button" onClick={() => toggleAccept(answer)} className="text-xs font-medium text-brand-700 hover:underline">
+                    <button type="button" onClick={() => toggleAccept(answer)} className="text-xs font-medium text-brand-300 hover:underline">
                       {answer.is_accepted ? "Retirer l'acceptation" : "Accepter cette réponse"}
                     </button>
                   )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { useState, type FormEvent } from "react";
 
 import { PostCard } from "@/components/community/PostCard";
@@ -66,13 +67,13 @@ export function FeedView({ questionsOnly = false }: { questionsOnly?: boolean })
 
       <form onSubmit={onSearch} className="mb-4 flex gap-2" role="search">
         <label htmlFor="feed-search" className="sr-only">Rechercher</label>
-        <input id="feed-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Rechercher (ex. pagination django)" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm" />
-        <button type="submit" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white">Rechercher</button>
+        <input id="feed-search" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Rechercher (ex. pagination django)" className="w-full rounded-xl border border-line bg-panel px-3 py-2 text-sm" />
+        <button type="submit" className="btn-primary rounded-xl px-5 py-2.5 text-sm">Rechercher</button>
       </form>
       {search && (
         <p className="mb-4 text-sm text-muted">
           Résultats pour « {search} » —{" "}
-          <button type="button" className="text-brand-700 underline" onClick={() => { setSearch(""); setDraft(""); }}>effacer</button>
+          <button type="button" className="text-brand-300 underline" onClick={() => { setSearch(""); setDraft(""); }}>effacer</button>
         </p>
       )}
 
@@ -88,9 +89,13 @@ export function FeedView({ questionsOnly = false }: { questionsOnly?: boolean })
       {feed.data && feed.data.count === 0 && (
         <EmptyState title="Aucun résultat">Modifiez les filtres ou lancez la première discussion.</EmptyState>
       )}
-      <div className={`space-y-3 ${feed.loading ? "opacity-60" : ""}`}>
-        {feed.data?.results.map((post) => <PostCard key={post.id} post={post} />)}
-      </div>
+      <Stagger key={JSON.stringify([filters, search, page, feed.data?.count])} className={`space-y-3 transition-opacity ${feed.loading ? "opacity-60" : ""}`}>
+        {feed.data?.results.map((post) => (
+          <StaggerItem key={post.id}>
+            <PostCard post={post} />
+          </StaggerItem>
+        ))}
+      </Stagger>
       {feed.data && <Pagination page={page} count={feed.data.count} onChange={setPage} />}
     </div>
   );

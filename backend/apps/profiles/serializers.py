@@ -94,6 +94,11 @@ class RestrictedProfileSerializer(serializers.ModelSerializer):
 class PublicProfileSerializer(serializers.ModelSerializer):
     """Profil public : ne contient ni e-mail, ni champ masqué, ni lien privé."""
 
+    user_id = serializers.UUIDField(
+        source="user.id",
+        read_only=True,
+        help_text="Identifiant du compte (signalement d'un profil).",
+    )
     username = serializers.CharField(source="user.username", read_only=True)
     member_since = serializers.DateTimeField(source="user.date_joined", read_only=True)
     country = CountryRefSerializer(read_only=True)
@@ -105,6 +110,7 @@ class PublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeveloperProfile
         fields = [
+            "user_id",
             "username",
             "display_name",
             "headline",
